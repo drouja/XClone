@@ -11,7 +11,7 @@ class XCLONE_API Node
 {
 public:
 	Node();
-	~Node();
+	//~Node();
 public:
 	Node * neighbours[8]; //Array of Neighboring nodes
 	FVector loc; //Node location

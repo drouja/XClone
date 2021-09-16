@@ -2,12 +2,13 @@
 
 
 #include "Node.h"
+#include "Math/Vector.h"
 
-Node::Node(FVector loc)
-{
-	this.loc = loc;
-}
-
-Node::~Node()
+Node::Node()
 {
 }
+
+
+//Node::~Node()
+//{
+//}
