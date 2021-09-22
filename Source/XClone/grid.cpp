@@ -2,11 +2,37 @@
 
 
 #include "grid.h"
-#include "node.h"
 #include "Components/BoxComponent.h"
 #include "Math/Vector2D.h"
 #include "Math/Vector.h"
-#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+
+
+void Agrid::UpdateGrid()
+{
+
+	//Update Debug Box to show new grid size
+	box->SetBoxExtent(FVector{ numnodes[0]*nodeDiameter,numnodes[1] * nodeDiameter,5 });
+
+	//Calculate the location of the bottom right of the grid
+	FVector brloc = FVector{ this->GetActorLocation().X - (numnodes[0] * nodeDiameter / 2), this->GetActorLocation().Y - (numnodes[1] * nodeDiameter / 2), this->GetActorLocation().Z };
+
+	//Populate 2D Tarray with Nodes
+	grid.SetNum(numnodes[0]);
+	for (int i{ 0 }; i < numnodes[0]; i++)
+	{
+		grid[i].ary.SetNum(numnodes[1]);
+		for (int j{ 0 }; j < numnodes[1]; j++)
+		{
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			grid[i].ary[j] = GetWorld()->SpawnActor<Atile>(FVector{ brloc.X + nodeDiameter * i, brloc.Y + nodeDiameter * j, brloc.Z }, FRotator{ 0.0,0.0,0.0 }, SpawnInfo);
+			//grid[i].ary[j]->SetActorLocation();
+		}
+	}
+}
+
+
 
 // Sets default values
 Agrid::Agrid()
@@ -17,33 +43,29 @@ Agrid::Agrid()
 	//Initialize Box and set it as root
 	box = CreateDefaultSubobject<UBoxComponent>("DebugBox");
 	this->SetRootComponent(box);
+	
+	nodeDiameter = 50;
+
+	//Create Dynamic Material
+	UpdateGrid();
 }
+
+#if WITH_EDITOR
+void Agrid::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (!PropertyChangedEvent.Property)
+		return;
+	UpdateGrid();
+}
+#endif
 
 // Called when the game starts or when spawned
 void Agrid::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//Set grid size to debug box size
-	size = FVector2D{ 2*box->GetUnscaledBoxExtent().X,2*box->GetUnscaledBoxExtent().Y };
-
-	numnodes[0] = size.X / nodeDiameter;
-	numnodes[1] = size.Y / nodeDiameter;
-
-	FVector brloc = FVector{this->GetActorLocation().X - (size.X /2), this->GetActorLocation().Y - (size.Y / 2), this->GetActorLocation().Z };
-
-	TArray<TArray<Node>> grid;
-	grid.SetNum(numnodes[0]);
-
-	for (int i{ 0 }; i < numnodes[0]; i++)
-	{
-		grid[i].SetNum(numnodes[1]);
-		for (int j{ 0 }; j < numnodes[1]; j++)
-		{
-			grid[i][j].loc = FVector{ brloc.X + nodeDiameter * i, brloc.Y + nodeDiameter * j, brloc.Z };
-			
-		}
-	}
+	
 
 }
 
