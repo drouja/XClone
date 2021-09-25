@@ -18,8 +18,9 @@ Atile::Atile()
 	box->SetupAttachment(tilemesh);
 	box->SetBoxExtent(FVector{ 50,50,50 });
 	box->SetRelativeLocation(FVector{0,0,50});
+	box->SetMobility(EComponentMobility::Static);
 	box->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	box->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECR_Block);
+	box->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECR_Block);
 }
 
 // Called when the game starts or when spawned
@@ -27,7 +28,7 @@ void Atile::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	tilemesh->SetMobility(EComponentMobility::Static);
 	FHitResult Outhit{};
 	TArray<AActor*> actorsToIgnore;
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,0,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_WorldStatic), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
