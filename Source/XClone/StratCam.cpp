@@ -5,6 +5,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h"
 #include "Engine/World.h"
+#include "BattleManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "xpawn.h"
 
 
 // Sets default values
@@ -21,20 +24,27 @@ AStratCam::AStratCam()
 
 	speed = 12;
 	scrollspeed = 5000;
+
+	battlemanager = nullptr;
 }
 
 // Called when the game starts or when spawned
 void AStratCam::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	TArray<AActor* >foundactor;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
+	for (AActor* Actor : foundactor)
+	{
+		battlemanager = Cast<ABattleManager>(Actor);
+	}
 }
 
 // Called every frame
 void AStratCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (movetodesiredloc) SetActorLocation(FMath::VInterpTo(GetActorLocation(), desiredloc, DeltaTime, 10.0f));
 }
 
 // Called to bind functionality to input
@@ -45,6 +55,7 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveRight", this, &AStratCam::MoveRight);
 	PlayerInputComponent->BindAxis("Scroll", this, &AStratCam::Zoom);
 	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
+	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
 
 }
 
@@ -52,6 +63,7 @@ void AStratCam::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
+		movetodesiredloc = false; //Stop moving to some location
 		FVector fv = GetActorForwardVector() * Value;
 		fv.Z = 0;
 		SetActorLocation(GetActorLocation() + fv * speed);
@@ -62,6 +74,7 @@ void AStratCam::MoveRight(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
+		movetodesiredloc = false; //Stop moving to some location
 		FVector rv = GetActorRightVector() * Value;
 		rv.Z = 0;
 		SetActorLocation(GetActorLocation() + rv * speed);
@@ -72,7 +85,7 @@ void AStratCam::Zoom(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		SpringArmComp->TargetArmLength = FMath::FInterpTo(SpringArmComp->TargetArmLength, FMath::Clamp(SpringArmComp->TargetArmLength + Value * scrollspeed, 100.0f, 1200.0f), GetWorld()->GetDeltaSeconds(), 7.0f);
+		SpringArmComp->TargetArmLength = FMath::FInterpTo(SpringArmComp->TargetArmLength, FMath::Clamp(SpringArmComp->TargetArmLength + Value * scrollspeed, 200.0f, 1200.0f), GetWorld()->GetDeltaSeconds(), 7.0f);
 	}
 }
 
@@ -82,4 +95,21 @@ void AStratCam::RotateCam(float Value)
 	{
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetActorRotation() + FRotator{ 0,Value*20,0 }, GetWorld()->DeltaTimeSeconds, 10.0f));
 	}
+}
+
+void AStratCam::ChangeFocus()
+{
+	if (battlemanager != nullptr)
+	{
+		Axpawn* focusedpawn = battlemanager->CycleFocus();
+		FVector loc = focusedpawn->GetActorLocation();
+		loc.Z = GetActorLocation().Z;
+		MoveTo(loc);
+	}
+}
+
+void AStratCam::MoveTo(FVector loc)
+{
+	desiredloc = loc;
+	movetodesiredloc = true;
 }

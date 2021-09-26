@@ -22,6 +22,9 @@ protected:
 	void MoveForward(float Value);
 	void Zoom(float Value);
 	void RotateCam(float Value);
+	void ChangeFocus();
+	void MoveTo(FVector loc);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class UCameraComponent* Cam;
@@ -29,6 +32,7 @@ protected:
 	class USpringArmComponent* SpringArmComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class USceneComponent* Arootcomponent;
+	class ABattleManager* battlemanager;
 
 public:	
 	// Called every frame
@@ -40,5 +44,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	float speed;
 	float scrollspeed;
+	FVector desiredloc;
+	bool movetodesiredloc;
 
 };
