@@ -8,6 +8,8 @@
 #include "BattleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "xpawn.h"
+#include "tile.h"
+#include "Engine/EngineTypes.h"
 
 
 // Sets default values
@@ -21,6 +23,7 @@ AStratCam::AStratCam()
 	SpringArmComp->SetupAttachment(Arootcomponent);
 	Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Cam->SetupAttachment(SpringArmComp);
+	select = CreateDefaultSubobject<UStaticMeshComponent>("SelectMesh");
 
 	speed = 12;
 	scrollspeed = 5000;
@@ -31,6 +34,7 @@ AStratCam::AStratCam()
 // Called when the game starts or when spawned
 void AStratCam::BeginPlay()
 {
+	select->SetVisibility(false);
 	Super::BeginPlay();
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
@@ -38,6 +42,18 @@ void AStratCam::BeginPlay()
 	{
 		battlemanager = Cast<ABattleManager>(Actor);
 	}
+	
+	//Get controller and enable mouse cursor
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->bEnableClickEvents = true;
+		PC->bEnableMouseOverEvents = true;
+	}
+
+	//Set timers
+	GetWorldTimerManager().SetTimer(findtile, this, &AStratCam::HighlightTile, 0.05f, true, 0.0f);
 }
 
 // Called every frame
@@ -112,4 +128,17 @@ void AStratCam::MoveTo(FVector loc)
 {
 	desiredloc = loc;
 	movetodesiredloc = true;
+}
+
+void AStratCam::HighlightTile()
+{
+
+	FHitResult outhit{};
+	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
+	Atile* tile = Cast<Atile>(outhit.GetActor());
+	if (tile != nullptr)
+	{
+		select->SetVisibility(true);
+		select->SetWorldLocation(tile->GetActorLocation());
+	}
 }

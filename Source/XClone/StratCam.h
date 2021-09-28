@@ -24,6 +24,10 @@ protected:
 	void RotateCam(float Value);
 	void ChangeFocus();
 	void MoveTo(FVector loc);
+	void HighlightTile();
+
+private:
+	FTimerHandle findtile;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -33,6 +37,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class USceneComponent* Arootcomponent;
 	class ABattleManager* battlemanager;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
+	class UStaticMeshComponent* select;
 
 public:	
 	// Called every frame
