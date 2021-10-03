@@ -31,6 +31,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	class Atile* FindTile();
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 

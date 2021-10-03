@@ -52,5 +52,7 @@ public:
 	float scrollspeed;
 	FVector desiredloc;
 	bool movetodesiredloc;
+protected:
+	class Atile* oldtile;
 
 };

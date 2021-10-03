@@ -29,6 +29,8 @@ AStratCam::AStratCam()
 	scrollspeed = 5000;
 
 	battlemanager = nullptr;
+
+	oldtile = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -136,9 +138,12 @@ void AStratCam::HighlightTile()
 	FHitResult outhit{};
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
 	Atile* tile = Cast<Atile>(outhit.GetActor());
-	if (tile != nullptr)
+	
+	if (tile != nullptr && oldtile != tile)
 	{
+		oldtile = tile;
 		select->SetVisibility(true);
 		select->SetWorldLocation(tile->GetActorLocation());
+		battlemanager->Pathfind(tile);
 	}
 }

@@ -17,6 +17,7 @@ public:
 	Atile();
 	UPROPERTY(VisibleAnywhere, Category = Debug)
 	Atile* neighbours[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}; //Array of Neighboring nodes
+	Atile* parent;
 	float gcost;
 	float hcost;
 	float fcost;

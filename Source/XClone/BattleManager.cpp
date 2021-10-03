@@ -3,9 +3,12 @@
 
 #include "BattleManager.h"
 #include "xpawn.h"
+#include "tile.h"
 #include "StratCam.h"
 #include "Containers/Array.h"
 #include "Kismet/GameplayStatics.h"
+#include "Algo/Reverse.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
@@ -50,3 +53,72 @@ Axpawn* ABattleManager::CycleFocus()
 	return focusedpawn;
 }
 
+void ABattleManager::Pathfind(Atile* end)
+{
+	Atile* start = focusedpawn->FindTile();
+	TArray<Atile*> open;
+	open.Add(start);
+	TArray<Atile*> closed;
+	//float timeout{ 0 };
+	while (true)
+	{
+		if (open.Num()>1)
+			open.HeapSort([&]( const Atile & itemA, const Atile & itemB)
+				{
+					return (itemA.fcost < itemB.fcost);
+				});
+		Atile* current = open[0];
+		open.RemoveAt(0);
+		closed.Add(current);
+		if (current == end)
+		{
+			makepath(start,end);
+			return;
+		}
+		for (int i{ 0 }; i < 8;i++) {
+			Atile* neighbour = current->neighbours[i];
+			if (neighbour == nullptr || closed.Contains(neighbour)) continue;
+			bool notcontains = !open.Contains(neighbour);
+			if (notcontains || ((current->gcost + ABattleManager::h(neighbour, current)) < neighbour->gcost))
+			{
+				neighbour->gcost = current->gcost + 1;
+				neighbour->hcost = ABattleManager::h(neighbour, end);
+				neighbour->fcost = neighbour->hcost + neighbour->gcost;
+				neighbour->parent = current;
+				if (notcontains) open.Add(neighbour);
+			}
+		}
+		//timeout += GetWorld()->DeltaTimeSeconds;
+	}
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
+	path.Empty();
+}
+
+void ABattleManager::makepath(Atile* begin, Atile* end)
+{
+	path.Empty();
+	Atile* current = end;
+	while (current != begin)
+	{
+		path.Add(current->GetActorLocation());
+		current = current->parent;
+	}
+	Algo::Reverse(path);
+
+	for (int i{1};i<path.Num();i++)
+	{
+		DrawDebugLine(GetWorld(), path[i - 1], path[i], FColor(52, 220, 239), true);
+	}
+}
+
+
+inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB)
+{
+	return (itemA->fcost < itemB->fcost);
+}
+
+inline float ABattleManager::h(Atile* itemA, Atile* itemB)
+{
+	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
+}
