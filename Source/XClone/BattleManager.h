@@ -30,8 +30,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	class Axpawn* CycleFocus();
-	void Pathfind(Atile* end);
-	void makepath(Atile* start, Atile* end);
-	TArray<FVector> path;
-
+	void Pathfind(Atile* end, TArray<FVector>& path);
+	void makepath(Atile* start, Atile* end, TArray<FVector>& path);
 };

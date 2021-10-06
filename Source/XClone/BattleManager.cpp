@@ -53,7 +53,7 @@ Axpawn* ABattleManager::CycleFocus()
 	return focusedpawn;
 }
 
-void ABattleManager::Pathfind(Atile* end)
+void ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 {
 	Atile* start = focusedpawn->FindTile();
 	TArray<Atile*> open;
@@ -72,7 +72,7 @@ void ABattleManager::Pathfind(Atile* end)
 		closed.Add(current);
 		if (current == end)
 		{
-			makepath(start,end);
+			makepath(start,end,path);
 			return;
 		}
 		for (int i{ 0 }; i < 8;i++) {
@@ -81,7 +81,7 @@ void ABattleManager::Pathfind(Atile* end)
 			bool notcontains = !open.Contains(neighbour);
 			if (notcontains || ((current->gcost + ABattleManager::h(neighbour, current)) < neighbour->gcost))
 			{
-				neighbour->gcost = current->gcost + 1;
+				neighbour->gcost = current->gcost + ABattleManager::h(neighbour, current);
 				neighbour->hcost = ABattleManager::h(neighbour, end);
 				neighbour->fcost = neighbour->hcost + neighbour->gcost;
 				neighbour->parent = current;
@@ -90,12 +90,9 @@ void ABattleManager::Pathfind(Atile* end)
 		}
 		//timeout += GetWorld()->DeltaTimeSeconds;
 	}
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
-	path.Empty();
 }
 
-void ABattleManager::makepath(Atile* begin, Atile* end)
+void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
 {
 	path.Empty();
 	Atile* current = end;
@@ -106,10 +103,12 @@ void ABattleManager::makepath(Atile* begin, Atile* end)
 	}
 	Algo::Reverse(path);
 
+	/*
 	for (int i{1};i<path.Num();i++)
 	{
 		DrawDebugLine(GetWorld(), path[i - 1], path[i], FColor(52, 220, 239), true);
 	}
+	*/
 }
 
 

@@ -39,6 +39,8 @@ protected:
 	class ABattleManager* battlemanager;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
 	class UStaticMeshComponent* select;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
+	class USplineComponent* path;
 
 public:	
 	// Called every frame
@@ -52,6 +54,7 @@ public:
 	float scrollspeed;
 	FVector desiredloc;
 	bool movetodesiredloc;
+	TArray<FVector> patharray;
 protected:
 	class Atile* oldtile;
 

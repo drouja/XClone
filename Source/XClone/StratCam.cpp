@@ -10,7 +10,7 @@
 #include "xpawn.h"
 #include "tile.h"
 #include "Engine/EngineTypes.h"
-
+#include "Components/SplineComponent.h"
 
 // Sets default values
 AStratCam::AStratCam()
@@ -24,6 +24,7 @@ AStratCam::AStratCam()
 	Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Cam->SetupAttachment(SpringArmComp);
 	select = CreateDefaultSubobject<UStaticMeshComponent>("SelectMesh");
+	path = CreateDefaultSubobject<USplineComponent>("PathMesh");
 
 	speed = 12;
 	scrollspeed = 5000;
@@ -37,6 +38,7 @@ AStratCam::AStratCam()
 void AStratCam::BeginPlay()
 {
 	select->SetVisibility(false);
+	path->SetVisibility(false);
 	Super::BeginPlay();
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
@@ -144,6 +146,9 @@ void AStratCam::HighlightTile()
 		oldtile = tile;
 		select->SetVisibility(true);
 		select->SetWorldLocation(tile->GetActorLocation());
-		battlemanager->Pathfind(tile);
+		path->SetVisibility(true);
+		path->ClearSplinePoints(true);
+		battlemanager->Pathfind(tile, patharray);
+		path->SetSplinePoints(patharray, ESplineCoordinateSpace::World,true);
 	}
 }
