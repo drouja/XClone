@@ -11,6 +11,7 @@
 #include "tile.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
 
 // Sets default values
 AStratCam::AStratCam()
@@ -38,7 +39,6 @@ AStratCam::AStratCam()
 void AStratCam::BeginPlay()
 {
 	select->SetVisibility(false);
-	path->SetVisibility(false);
 	Super::BeginPlay();
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
@@ -144,11 +144,28 @@ void AStratCam::HighlightTile()
 	if (tile != nullptr && oldtile != tile)
 	{
 		oldtile = tile;
-		select->SetVisibility(true);
 		select->SetWorldLocation(tile->GetActorLocation());
-		path->SetVisibility(true);
+		select->SetVisibility(true);
+
 		path->ClearSplinePoints(true);
 		battlemanager->Pathfind(tile, patharray);
 		path->SetSplinePoints(patharray, ESplineCoordinateSpace::World,true);
+		
+		for (int i{ 0 }; i < pathmesh.Num(); i++) //For some reason pathmesh.empty doesnt call destructors so we have to do it here :(
+		{
+			pathmesh[i]->DestroyComponent();
+		}
+
+		pathmesh.Empty();
+
+		for (int i{ 0 }; i < patharray.Num() - 1; i++)
+		{
+			pathmesh.Add(NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass()));
+			pathmesh[i]->SetMobility(EComponentMobility::Movable);
+			pathmesh[i]->SetupAttachment(path);
+			pathmesh[i]->SetStaticMesh(meshref);
+			pathmesh[i]->RegisterComponent();
+			pathmesh[i]->SetStartAndEnd(path->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local),path->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local), path->GetLocationAtSplinePoint(i+1, ESplineCoordinateSpace::Local), path->GetTangentAtSplinePoint(i+1, ESplineCoordinateSpace::Local));
+		}
 	}
 }

@@ -102,13 +102,6 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
 		current = current->parent;
 	}
 	Algo::Reverse(path);
-
-	/*
-	for (int i{1};i<path.Num();i++)
-	{
-		DrawDebugLine(GetWorld(), path[i - 1], path[i], FColor(52, 220, 239), true);
-	}
-	*/
 }
 
 

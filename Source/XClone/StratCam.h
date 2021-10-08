@@ -41,6 +41,10 @@ protected:
 	class UStaticMeshComponent* select;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
 	class USplineComponent* path;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
+	TArray<class USplineMeshComponent*> pathmesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
+	UStaticMesh* meshref;
 
 public:	
 	// Called every frame
