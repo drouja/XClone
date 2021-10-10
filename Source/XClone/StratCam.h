@@ -25,6 +25,7 @@ protected:
 	void ChangeFocus();
 	void MoveTo(FVector loc);
 	void HighlightTile();
+	void RequestMove();
 
 private:
 	FTimerHandle findtile;

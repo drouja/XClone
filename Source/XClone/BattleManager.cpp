@@ -9,6 +9,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Algo/Reverse.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Components/SplineComponent.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
@@ -53,8 +55,9 @@ Axpawn* ABattleManager::CycleFocus()
 	return focusedpawn;
 }
 
-void ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
+bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 {
+	if (GetWorldTimerManager().IsTimerActive(movehandle)) return false; //If pawn is moving dont pathfind
 	Atile* start = focusedpawn->FindTile();
 	TArray<Atile*> open;
 	open.Add(start);
@@ -73,7 +76,7 @@ void ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 		if (current == end)
 		{
 			makepath(start,end,path);
-			return;
+			return true;
 		}
 		for (int i{ 0 }; i < 8;i++) {
 			Atile* neighbour = current->neighbours[i];
@@ -101,6 +104,7 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
 		path.Add(current->GetActorLocation());
 		current = current->parent;
 	}
+	path.Add(begin->GetActorLocation());
 	Algo::Reverse(path);
 }
 
@@ -113,4 +117,26 @@ inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB
 inline float ABattleManager::h(Atile* itemA, Atile* itemB)
 {
 	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
+}
+
+void ABattleManager::startmovepawn(Atile* end, USplineComponent* spline)
+{
+	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
+	FTimerDelegate movehandledel;
+	movedist = 0;
+	movehandledel.BindUFunction(this, FName("movepawn"), end, spline);
+	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
+}
+
+void ABattleManager::movepawn(Atile* end, USplineComponent* spline)
+{
+	movedist += 3;
+	if (movedist >= spline->GetSplineLength())
+	{
+		GetWorldTimerManager().ClearTimer(movehandle);
+		return;
+	}
+	FVector loc = spline->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
+	focusedpawn->SetActorLocationAndRotation(loc, spline->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World));
 }

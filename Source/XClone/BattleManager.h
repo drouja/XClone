@@ -20,6 +20,7 @@ protected:
 	virtual void BeginPlay() override;
 	inline static bool SortPredicate(class Atile* itemA, class Atile* itemB);
 	inline static float h(class Atile* itemA, class Atile* itemB);
+	FTimerHandle movehandle;
 protected:
 	TArray<class Axpawn*> friendlypawns;
 	class AStratCam* cam;
@@ -30,6 +31,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	class Axpawn* CycleFocus();
-	void Pathfind(Atile* end, TArray<FVector>& path);
+	bool Pathfind(Atile* end, TArray<FVector>& path);
 	void makepath(Atile* start, Atile* end, TArray<FVector>& path);
+	void startmovepawn(Atile* end, class USplineComponent* spline);
+	UFUNCTION()
+	void movepawn(Atile* end, class USplineComponent* spline);
+	float movedist;
 };

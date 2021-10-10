@@ -76,6 +76,7 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("Scroll", this, &AStratCam::Zoom);
 	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
 	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
+	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &AStratCam::RequestMove);
 
 }
 
@@ -143,12 +144,14 @@ void AStratCam::HighlightTile()
 	
 	if (tile != nullptr && oldtile != tile)
 	{
+		if (!battlemanager->Pathfind(tile, patharray)) return;
+		
 		oldtile = tile;
 		select->SetWorldLocation(tile->GetActorLocation());
 		select->SetVisibility(true);
 
 		path->ClearSplinePoints(true);
-		battlemanager->Pathfind(tile, patharray);
+
 		path->SetSplinePoints(patharray, ESplineCoordinateSpace::World,true);
 		
 		for (int i{ 0 }; i < pathmesh.Num(); i++) //For some reason pathmesh.empty doesnt call destructors so we have to do it here :(
@@ -167,5 +170,14 @@ void AStratCam::HighlightTile()
 			pathmesh[i]->RegisterComponent();
 			pathmesh[i]->SetStartAndEnd(path->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local),path->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local), path->GetLocationAtSplinePoint(i+1, ESplineCoordinateSpace::Local), path->GetTangentAtSplinePoint(i+1, ESplineCoordinateSpace::Local));
 		}
+	}
+}
+
+void AStratCam::RequestMove()
+{
+	battlemanager->startmovepawn(oldtile, path);
+	for (int i{ 0 }; i < pathmesh.Num(); i++)
+	{
+		pathmesh[i]->DestroyComponent();
 	}
 }
