@@ -104,6 +104,10 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
 		path.Add(current->GetActorLocation());
 		current = current->parent;
 	}
+	if (path.Num() > focusedpawn->movedist)
+	{
+		path.RemoveAt(0, path.Num() - focusedpawn->movedist, true);
+	}
 	path.Add(begin->GetActorLocation());
 	Algo::Reverse(path);
 }

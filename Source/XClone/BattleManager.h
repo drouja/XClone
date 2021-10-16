@@ -24,8 +24,8 @@ protected:
 protected:
 	TArray<class Axpawn*> friendlypawns;
 	class AStratCam* cam;
-	class Axpawn* focusedpawn;
 	int focusindex;
+	class Axpawn* focusedpawn;
 
 public:	
 	// Called every frame

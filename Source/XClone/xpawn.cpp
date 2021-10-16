@@ -19,6 +19,8 @@ Axpawn::Axpawn()
 	collider = CreateDefaultSubobject<UCapsuleComponent>("Collider");
 	collider->SetupAttachment(Arootcomponent);
 
+	movedist = 10;
+
 }
 
 // Called when the game starts or when spawned

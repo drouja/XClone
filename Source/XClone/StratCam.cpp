@@ -145,7 +145,7 @@ void AStratCam::HighlightTile()
 	if (tile != nullptr && oldtile != tile)
 	{
 		if (!battlemanager->Pathfind(tile, patharray)) return;
-		
+
 		oldtile = tile;
 		select->SetWorldLocation(tile->GetActorLocation());
 		select->SetVisibility(true);
@@ -156,7 +156,10 @@ void AStratCam::HighlightTile()
 		
 		for (int i{ 0 }; i < pathmesh.Num(); i++) //For some reason pathmesh.empty doesnt call destructors so we have to do it here :(
 		{
-			pathmesh[i]->DestroyComponent();
+			if (pathmesh[i] != nullptr)
+			{
+				pathmesh[i]->DestroyComponent();
+			}
 		}
 
 		pathmesh.Empty();
