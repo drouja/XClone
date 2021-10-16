@@ -44,7 +44,6 @@ void ABattleManager::BeginPlay()
 void ABattleManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 Axpawn* ABattleManager::CycleFocus()
@@ -58,6 +57,12 @@ Axpawn* ABattleManager::CycleFocus()
 bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 {
 	if (GetWorldTimerManager().IsTimerActive(movehandle)) return false; //If pawn is moving dont pathfind
+
+	// if destination already contains tile, don't pathfind to it
+	TArray<AActor* > result1;
+	end->GetOverlappingActors(result1, Axpawn::StaticClass());
+	if (result1.Num() > 0) return false;
+
 	Atile* start = focusedpawn->FindTile();
 	TArray<Atile*> open;
 	open.Add(start);
@@ -80,7 +85,14 @@ bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 		}
 		for (int i{ 0 }; i < 8;i++) {
 			Atile* neighbour = current->neighbours[i];
+			
 			if (neighbour == nullptr || closed.Contains(neighbour)) continue;
+
+			// Test if currently checked tile is already occupied
+			TArray<AActor* > result;
+			neighbour->GetOverlappingActors(result,Axpawn::StaticClass());
+			if (result.Num() > 0) continue;
+
 			bool notcontains = !open.Contains(neighbour);
 			if (notcontains || ((current->gcost + ABattleManager::h(neighbour, current)) < neighbour->gcost))
 			{
