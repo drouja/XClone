@@ -33,6 +33,8 @@ AStratCam::AStratCam()
 	battlemanager = nullptr;
 
 	oldtile = nullptr;
+
+	focusindex = 0;
 }
 
 // Called when the game starts or when spawned
@@ -47,7 +49,7 @@ void AStratCam::BeginPlay()
 		battlemanager = Cast<ABattleManager>(Actor);
 	}
 	
-	//Get controller and enable mouse cursor
+	// Get controller and enable mouse cursor
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC)
 	{
@@ -56,8 +58,17 @@ void AStratCam::BeginPlay()
 		PC->bEnableMouseOverEvents = true;
 	}
 
-	//Set timers
+	// Set timers
 	GetWorldTimerManager().SetTimer(findtile, this, &AStratCam::HighlightTile, 0.05f, true, 0.0f);
+
+	// Get list of friendly actors
+	TArray<AActor* > foundpawns;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
+	for (AActor* Actor : foundpawns)
+	{
+		friendlypawns.Add(Cast<Axpawn>(Actor));
+	}
+	focusedpawn = friendlypawns[0];
 }
 
 // Called every frame
@@ -120,13 +131,12 @@ void AStratCam::RotateCam(float Value)
 
 void AStratCam::ChangeFocus()
 {
-	if (battlemanager != nullptr)
-	{
-		Axpawn* focusedpawn = battlemanager->CycleFocus();
-		FVector loc = focusedpawn->GetActorLocation();
-		loc.Z = GetActorLocation().Z;
-		MoveTo(loc);
-	}
+	focusindex++;
+	if (focusindex >= friendlypawns.Num()) focusindex = 0;
+	focusedpawn = friendlypawns[focusindex];
+	FVector loc = focusedpawn->GetActorLocation();
+	loc.Z = GetActorLocation().Z;
+	MoveTo(loc);
 }
 
 void AStratCam::MoveTo(FVector loc)
@@ -144,7 +154,7 @@ void AStratCam::HighlightTile()
 	
 	if (tile != nullptr && oldtile != tile)
 	{
-		if (!battlemanager->Pathfind(tile, patharray)) return;
+		if (!battlemanager->Pathfind(tile, patharray, focusedpawn)) return;
 
 		oldtile = tile;
 		select->SetWorldLocation(tile->GetActorLocation());
@@ -178,7 +188,7 @@ void AStratCam::HighlightTile()
 
 void AStratCam::RequestMove()
 {
-	battlemanager->startmovepawn(oldtile, path);
+	battlemanager->startmovepawn(oldtile, path,focusedpawn);
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{
 		pathmesh[i]->DestroyComponent();

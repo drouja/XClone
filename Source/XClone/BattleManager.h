@@ -21,20 +21,15 @@ protected:
 	inline static bool SortPredicate(class Atile* itemA, class Atile* itemB);
 	inline static float h(class Atile* itemA, class Atile* itemB);
 	FTimerHandle movehandle;
-protected:
-	TArray<class Axpawn*> friendlypawns;
-	class AStratCam* cam;
-	int focusindex;
-	class Axpawn* focusedpawn;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	class Axpawn* CycleFocus();
-	bool Pathfind(Atile* end, TArray<FVector>& path);
-	void makepath(Atile* start, Atile* end, TArray<FVector>& path);
-	void startmovepawn(Atile* end, class USplineComponent* spline);
+	bool Pathfind(Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
+	void makepath(Atile* start, Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
+	void startmovepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn);
 	UFUNCTION()
-	void movepawn(Atile* end, class USplineComponent* spline);
+	void movepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn);
 	float movedist;
+
 };

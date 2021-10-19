@@ -62,5 +62,8 @@ public:
 	TArray<FVector> patharray;
 protected:
 	class Atile* oldtile;
+	TArray<class Axpawn*> friendlypawns;
+	class Axpawn* focusedpawn;
+	int focusindex;
 
 };

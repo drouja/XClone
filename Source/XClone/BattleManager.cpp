@@ -17,27 +17,11 @@ ABattleManager::ABattleManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	focusindex = 0;
 }
 
 // Called when the game starts or when spawned
 void ABattleManager::BeginPlay()
 {
-	Super::BeginPlay();
-	TArray<AActor* > foundpawns;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
-	for (AActor* Actor : foundpawns)
-	{
-		friendlypawns.Add(Cast<Axpawn>(Actor));
-	}
-	focusedpawn = friendlypawns[0];
-	TArray<AActor* >foundcamera;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStratCam::StaticClass(), foundcamera);
-	for (AActor* Actor : foundcamera)
-	{
-		cam = Cast<AStratCam>(Actor);
-	}
-
 }
 
 // Called every frame
@@ -46,15 +30,7 @@ void ABattleManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-Axpawn* ABattleManager::CycleFocus()
-{
-	focusindex++;
-	if (focusindex >= friendlypawns.Num()) focusindex = 0;
-	focusedpawn = friendlypawns[focusindex];
-	return focusedpawn;
-}
-
-bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
+bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
 	if (GetWorldTimerManager().IsTimerActive(movehandle)) return false; //If pawn is moving dont pathfind
 
@@ -80,7 +56,7 @@ bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 		closed.Add(current);
 		if (current == end)
 		{
-			makepath(start,end,path);
+			makepath(start,end,path, focusedpawn);
 			return true;
 		}
 		for (int i{ 0 }; i < 8;i++) {
@@ -103,11 +79,10 @@ bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 				if (notcontains) open.Add(neighbour);
 			}
 		}
-		//timeout += GetWorld()->DeltaTimeSeconds;
 	}
 }
 
-void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
+void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
 	path.Empty();
 	Atile* current = end;
@@ -135,16 +110,16 @@ inline float ABattleManager::h(Atile* itemA, Atile* itemB)
 	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
 }
 
-void ABattleManager::startmovepawn(Atile* end, USplineComponent* spline)
+void ABattleManager::startmovepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn)
 {
 	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
 	FTimerDelegate movehandledel;
 	movedist = 0;
-	movehandledel.BindUFunction(this, FName("movepawn"), end, spline);
+	movehandledel.BindUFunction(this, FName("movepawn"), end, spline, focusedpawn);
 	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
 }
 
-void ABattleManager::movepawn(Atile* end, USplineComponent* spline)
+void ABattleManager::movepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn)
 {
 	movedist += 3;
 	if (movedist >= spline->GetSplineLength())
