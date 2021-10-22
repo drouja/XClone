@@ -27,7 +27,17 @@ Axpawn::Axpawn()
 void Axpawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	team_mat = UMaterialInstanceDynamic::Create(pawnmesh->GetMaterial(0), this);
+	pawnmesh->SetMaterial(0,team_mat);
+	if (team == Red)
+	{
+		team_colour = FLinearColor{1,0,0};
+	}
+	else if (team == Blue)
+	{
+		team_colour = FLinearColor{0,0,1};
+	}
+	team_mat->SetVectorParameterValue(TEXT("team_colour"),team_colour);
 }
 
 // Called every frame

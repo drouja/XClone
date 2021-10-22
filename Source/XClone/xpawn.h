@@ -6,6 +6,13 @@
 #include "GameFramework/Pawn.h"
 #include "xpawn.generated.h"
 
+UENUM()
+enum Team
+{
+	Red		UMETA(DisplayName = "Red"),
+	Blue	UMETA(DisplayName = "Blue"),
+};
+
 UCLASS()
 class XCLONE_API Axpawn : public APawn
 {
@@ -21,11 +28,13 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
-		class UStaticMeshComponent* pawnmesh;
+	class UStaticMeshComponent* pawnmesh;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
-		class UCapsuleComponent* collider;
+	class UCapsuleComponent* collider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
-		class USceneComponent* Arootcomponent;
+	class USceneComponent* Arootcomponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
+	UMaterialInstanceDynamic* team_mat;
 
 public:	
 	// Called every frame
@@ -39,5 +48,11 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	int movedist;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+	TEnumAsByte<Team> team;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+	FLinearColor team_colour;
+	
+	
 
 };
