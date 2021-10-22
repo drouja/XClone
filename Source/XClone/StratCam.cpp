@@ -91,6 +91,18 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void AStratCam::server_requestmove_Implementation(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1)
+{
+	USplineComponent* generatedspline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
+	generatedspline->SetSplinePoints(spline, ESplineCoordinateSpace::World,true);
+	battlemanager->startmovepawn(end, generatedspline, focusedpawn1);
+}
+
+bool AStratCam::server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1)
+{
+	return true;
+}
+
 void AStratCam::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
@@ -184,13 +196,19 @@ void AStratCam::HighlightTile()
 			pathmesh[i]->SetStartAndEnd(path->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local),path->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local), path->GetLocationAtSplinePoint(i+1, ESplineCoordinateSpace::Local), path->GetTangentAtSplinePoint(i+1, ESplineCoordinateSpace::Local));
 		}
 	}
-}
+}                       
 
 void AStratCam::RequestMove()
 {
-	battlemanager->startmovepawn(oldtile, path,focusedpawn);
+	if (!HasAuthority()) server_requestmove(oldtile,patharray,focusedpawn);
+	else
+	{
+		battlemanager->startmovepawn(oldtile, path,focusedpawn);
+		UE_LOG(LogTemp, Warning, TEXT("Server function called"));
+	}
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{
-		pathmesh[i]->DestroyComponent();
+		if (pathmesh[i] != nullptr)
+			pathmesh[i]->DestroyComponent();
 	}
 }

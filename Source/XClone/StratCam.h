@@ -66,4 +66,10 @@ protected:
 	class Axpawn* focusedpawn;
 	int focusindex;
 
+// Multiplayer functions
+protected:
+	 UFUNCTION(Server, Reliable, WithValidation)
+	void server_requestmove(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
+	void server_requestmove_Implementation(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
+	bool server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
 };
