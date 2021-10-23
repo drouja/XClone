@@ -75,4 +75,9 @@ protected:
 	void server_requestmove(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
 	void server_requestmove_Implementation(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
 	bool server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
+	void startmovepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn1);
+	UFUNCTION()
+	void movepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn1);
+	float movedist;
+	FTimerHandle movehandle;
 };

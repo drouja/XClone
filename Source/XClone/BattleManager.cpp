@@ -11,12 +11,14 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SplineComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -32,9 +34,8 @@ void ABattleManager::Tick(float DeltaTime)
 
 bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
-	if (GetWorldTimerManager().IsTimerActive(movehandle)) return false; //If pawn is moving dont pathfind
 
-	// if destination already contains tile, don't pathfind to it
+	// if destination already contains pawn, don't pathfind to it
 	TArray<AActor* > result1;
 	end->GetOverlappingActors(result1, Axpawn::StaticClass());
 	if (result1.Num() > 0) return false;
@@ -108,26 +109,4 @@ inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB
 inline float ABattleManager::h(Atile* itemA, Atile* itemB)
 {
 	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
-}
-
-void ABattleManager::startmovepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn)
-{
-	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
-	FTimerDelegate movehandledel;
-	movedist = 0;
-	movehandledel.BindUFunction(this, FName("movepawn"), end, spline, focusedpawn);
-	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
-}
-
-void ABattleManager::movepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn)
-{
-	movedist += 3;
-	if (movedist >= spline->GetSplineLength())
-	{
-		GetWorldTimerManager().ClearTimer(movehandle);
-		return;
-	}
-	FVector loc = spline->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
-	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
-	focusedpawn->SetActorLocationAndRotation(loc, spline->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World));
 }

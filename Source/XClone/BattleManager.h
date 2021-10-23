@@ -20,16 +20,12 @@ protected:
 	virtual void BeginPlay() override;
 	inline static bool SortPredicate(class Atile* itemA, class Atile* itemB);
 	inline static float h(class Atile* itemA, class Atile* itemB);
-	FTimerHandle movehandle;
+	//UPROPERTY(Replicated, BlueprintReadOnly)
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	bool Pathfind(Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
 	void makepath(Atile* start, Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
-	void startmovepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn);
-	UFUNCTION()
-	void movepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn);
-	float movedist;
 
 };

@@ -103,7 +103,7 @@ void AStratCam::server_requestmove_Implementation(Atile* end, const TArray<FVect
 {
 	USplineComponent* generatedspline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
 	generatedspline->SetSplinePoints(spline, ESplineCoordinateSpace::World,true);
-	battlemanager->startmovepawn(end, generatedspline, focusedpawn1);
+	startmovepawn(end, generatedspline, focusedpawn1);
 }
 
 bool AStratCam::server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1)
@@ -167,6 +167,7 @@ void AStratCam::MoveTo(FVector loc)
 
 void AStratCam::HighlightTile()
 {
+	if (GetWorldTimerManager().IsTimerActive(movehandle)) return;
 
 	FHitResult outhit{};
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
@@ -211,7 +212,7 @@ void AStratCam::RequestMove()
 	if (!HasAuthority()) server_requestmove(oldtile,patharray,focusedpawn);
 	else
 	{
-		battlemanager->startmovepawn(oldtile, path,focusedpawn);
+		startmovepawn(oldtile, path,focusedpawn);
 		UE_LOG(LogTemp, Warning, TEXT("Server function called"));
 	}
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
@@ -219,4 +220,26 @@ void AStratCam::RequestMove()
 		if (pathmesh[i] != nullptr)
 			pathmesh[i]->DestroyComponent();
 	}
+}
+
+void AStratCam::startmovepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn1)
+{
+	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
+	FTimerDelegate movehandledel;
+	movedist = 0;
+	movehandledel.BindUFunction(this, FName("movepawn"), end, spline, focusedpawn);
+	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
+}
+
+void AStratCam::movepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn1)
+{
+	movedist += 3;
+	if (movedist >= spline->GetSplineLength())
+	{
+		GetWorldTimerManager().ClearTimer(movehandle);
+		return;
+	}
+	FVector loc = spline->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
+	focusedpawn->SetActorLocationAndRotation(loc, spline->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World));
 }
