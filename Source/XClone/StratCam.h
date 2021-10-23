@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "xpawn.h"
 #include "GameFramework/Pawn.h"
 #include "StratCam.generated.h"
 
@@ -65,6 +66,8 @@ protected:
 	TArray<class Axpawn*> friendlypawns;
 	class Axpawn* focusedpawn;
 	int focusindex;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+	TEnumAsByte<Team> playerteam;
 
 // Multiplayer functions
 protected:

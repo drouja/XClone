@@ -42,6 +42,12 @@ void AStratCam::BeginPlay()
 {
 	select->SetVisibility(false);
 	Super::BeginPlay();
+
+	if (HasAuthority())
+		playerteam = Red;
+	else
+		playerteam = Blue;
+	
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
 	for (AActor* Actor : foundactor)
@@ -66,7 +72,9 @@ void AStratCam::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
 	for (AActor* Actor : foundpawns)
 	{
-		friendlypawns.Add(Cast<Axpawn>(Actor));
+		Axpawn* foundpawn = Cast<Axpawn>(Actor);
+		if (foundpawn != nullptr && foundpawn->team == playerteam)
+			friendlypawns.Add(foundpawn);
 	}
 	focusedpawn = friendlypawns[0];
 }
