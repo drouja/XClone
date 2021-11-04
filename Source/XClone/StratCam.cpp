@@ -35,6 +35,7 @@ AStratCam::AStratCam()
 	oldtile = nullptr;
 
 	focusindex = 0;
+	ismoving = false;
 }
 
 // Called when the game starts or when spawned
@@ -84,6 +85,11 @@ void AStratCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (movetodesiredloc) SetActorLocation(FMath::VInterpTo(GetActorLocation(), desiredloc, DeltaTime, 10.0f));
+	if (HasAuthority())
+	{
+		//ismoving = true;
+		UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), ( battlemanager->ismoving ? TEXT("true") : TEXT("false") ));
+	}
 }
 
 // Called to bind functionality to input
@@ -99,14 +105,12 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AStratCam::server_requestmove_Implementation(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1)
+void AStratCam::server_requestmove_Implementation(FVector loc, FRotator rot, Axpawn* focusedpawn1)
 {
-	USplineComponent* generatedspline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
-	generatedspline->SetSplinePoints(spline, ESplineCoordinateSpace::World,true);
-	startmovepawn(end, generatedspline, focusedpawn1);
+	focusedpawn1->SetActorLocationAndRotation(loc, rot);
 }
 
-bool AStratCam::server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1)
+bool AStratCam::server_requestmove_Validate(FVector loc, FRotator rot, Axpawn* focusedpawn1)
 {
 	return true;
 }
@@ -167,8 +171,7 @@ void AStratCam::MoveTo(FVector loc)
 
 void AStratCam::HighlightTile()
 {
-	if (GetWorldTimerManager().IsTimerActive(movehandle)) return;
-
+	if (battlemanager->ismoving) return;
 	FHitResult outhit{};
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
 	Atile* tile = Cast<Atile>(outhit.GetActor());
@@ -209,12 +212,7 @@ void AStratCam::HighlightTile()
 
 void AStratCam::RequestMove()
 {
-	if (!HasAuthority()) server_requestmove(oldtile,patharray,focusedpawn);
-	else
-	{
-		startmovepawn(oldtile, path,focusedpawn);
-		UE_LOG(LogTemp, Warning, TEXT("Server function called"));
-	}
+	startmovepawn();
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{
 		if (pathmesh[i] != nullptr)
@@ -222,24 +220,26 @@ void AStratCam::RequestMove()
 	}
 }
 
-void AStratCam::startmovepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn1)
+void AStratCam::startmovepawn()
 {
-	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
-	FTimerDelegate movehandledel;
+	if (ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
 	movedist = 0;
-	movehandledel.BindUFunction(this, FName("movepawn"), end, spline, focusedpawn);
-	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
+	battlemanager->ismoving = true;
+	GetWorldTimerManager().SetTimer(movehandle, this, &AStratCam::movepawn, 0.01, true, 0.0f);
+	if (HasAuthority()) UE_LOG(LogTemp, Warning, TEXT("Wtf"));
 }
 
-void AStratCam::movepawn(Atile* end, USplineComponent* spline, Axpawn* focusedpawn1)
+void AStratCam::movepawn()
 {
 	movedist += 3;
-	if (movedist >= spline->GetSplineLength())
+	if (movedist >= path->GetSplineLength())
 	{
 		GetWorldTimerManager().ClearTimer(movehandle);
+		battlemanager->ismoving = false;
 		return;
 	}
-	FVector loc = spline->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	FVector loc = path->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
 	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
-	focusedpawn->SetActorLocationAndRotation(loc, spline->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World));
+	FRotator rot = path->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	server_requestmove(loc, rot, focusedpawn);
 }

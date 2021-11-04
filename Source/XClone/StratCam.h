@@ -68,16 +68,17 @@ protected:
 	int focusindex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	TEnumAsByte<Team> playerteam;
+	UPROPERTY(BlueprintReadOnly)
+	bool ismoving;
 
 // Multiplayer functions
 protected:
 	 UFUNCTION(Server, Reliable, WithValidation)
-	void server_requestmove(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
-	void server_requestmove_Implementation(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
-	bool server_requestmove_Validate(Atile* end, const TArray<FVector> & spline, Axpawn* focusedpawn1);
-	void startmovepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn1);
+	void server_requestmove(FVector loc, FRotator rot, Axpawn* focusedpawn1);
+	void startmovepawn();
 	UFUNCTION()
-	void movepawn(Atile* end, class USplineComponent* spline, class Axpawn* focusedpawn1);
+	void movepawn();
 	float movedist;
 	FTimerHandle movehandle;
+	
 };

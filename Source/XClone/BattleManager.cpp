@@ -11,14 +11,13 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SplineComponent.h"
-#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	SetReplicates(true);
+	ismoving = false;
 }
 
 // Called when the game starts or when spawned
@@ -34,7 +33,6 @@ void ABattleManager::Tick(float DeltaTime)
 
 bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
-
 	// if destination already contains pawn, don't pathfind to it
 	TArray<AActor* > result1;
 	end->GetOverlappingActors(result1, Axpawn::StaticClass());
