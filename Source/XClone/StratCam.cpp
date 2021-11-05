@@ -12,6 +12,7 @@
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AStratCam::AStratCam()
@@ -88,7 +89,7 @@ void AStratCam::Tick(float DeltaTime)
 	if (HasAuthority())
 	{
 		//ismoving = true;
-		UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), ( battlemanager->ismoving ? TEXT("true") : TEXT("false") ));
+		UE_LOG(LogTemp, Warning, TEXT("Turn: %s"), ( (battlemanager->turn == 1) ? TEXT("Client") : TEXT("Server") ));
 	}
 }
 
@@ -102,6 +103,7 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
 	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
 	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &AStratCam::RequestMove);
+	PlayerInputComponent->BindAction("Enter", IE_Pressed, this, &AStratCam::EndTurn);
 
 }
 
@@ -220,6 +222,12 @@ void AStratCam::RequestMove()
 	}
 }
 
+void AStratCam::EndTurn()
+{
+	if(!HasAuthority() && battlemanager->turn == 1)server_endturn();
+	else if (HasAuthority() && battlemanager->turn == 0) battlemanager->turn = 1;
+}
+
 void AStratCam::startmovepawn()
 {
 	if (ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
@@ -242,4 +250,14 @@ void AStratCam::movepawn()
 	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
 	FRotator rot = path->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
 	server_requestmove(loc, rot, focusedpawn);
+}
+
+void AStratCam::server_endturn_Implementation()
+{
+	battlemanager->turn = 0;
+}
+
+bool AStratCam::server_endturn_Validate()
+{
+	return true;
 }

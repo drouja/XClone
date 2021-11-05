@@ -27,6 +27,7 @@ protected:
 	void MoveTo(FVector loc);
 	void HighlightTile();
 	void RequestMove();
+	void EndTurn();
 
 private:
 	FTimerHandle findtile;
@@ -80,5 +81,7 @@ protected:
 	void movepawn();
 	float movedist;
 	FTimerHandle movehandle;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void server_endturn();
 	
 };

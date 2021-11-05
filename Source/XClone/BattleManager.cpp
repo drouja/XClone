@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/SplineComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
@@ -18,6 +19,9 @@ ABattleManager::ABattleManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	ismoving = false;
+	bReplicates = true;
+
+	turn = 1;
 }
 
 // Called when the game starts or when spawned
@@ -107,4 +111,9 @@ inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB
 inline float ABattleManager::h(Atile* itemA, Atile* itemB)
 {
 	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
+}
+
+void ABattleManager::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+	DOREPLIFETIME( ABattleManager, turn );
 }
