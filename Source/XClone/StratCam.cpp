@@ -67,7 +67,7 @@ void AStratCam::BeginPlay()
 	}
 
 	// Set timers
-	GetWorldTimerManager().SetTimer(findtile, this, &AStratCam::HighlightTile, 0.05f, true, 0.0f);
+	
 
 	// Get list of friendly actors
 	TArray<AActor* > foundpawns;
@@ -86,7 +86,7 @@ void AStratCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (movetodesiredloc) SetActorLocation(FMath::VInterpTo(GetActorLocation(), desiredloc, DeltaTime, 10.0f));
-	if (!HasAuthority())
+	if (HasAuthority())
 	{
 		//ismoving = true;
 		//UE_LOG(LogTemp, Warning, TEXT("Turn: %s"), ( (battlemanager->turn == 1) ? TEXT("Client") : TEXT("Server") ));
@@ -101,6 +101,7 @@ void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveRight", this, &AStratCam::MoveRight);
 	PlayerInputComponent->BindAxis("Scroll", this, &AStratCam::Zoom);
 	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
+	PlayerInputComponent->BindAxis("MouseMove", this, &AStratCam::MouseMovement);
 	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
 	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &AStratCam::RequestMove);
 	PlayerInputComponent->BindAction("Enter", IE_Pressed, this, &AStratCam::EndTurn);
@@ -137,6 +138,11 @@ void AStratCam::MoveRight(float Value)
 		rv.Z = 0;
 		SetActorLocation(GetActorLocation() + rv * speed);
 	}
+}
+
+void AStratCam::MouseMovement(float Value)
+{
+	HighlightTile();
 }
 
 void AStratCam::Zoom(float Value)
@@ -231,6 +237,8 @@ void AStratCam::EndTurn()
 	{
 		clearsplinemesh();
 		battlemanager->turn = 1;
+		if (HasAuthority())
+		UE_LOG(LogTemp, Warning, TEXT("???????"));
 	}
 }
 
@@ -245,8 +253,6 @@ void AStratCam::clearsplinemesh()
 		}
 	}
 	pathmesh.Empty();
-	if (HasAuthority())
-	UE_LOG(LogTemp, Warning, TEXT("???????"));
 }
 
 void AStratCam::startmovepawn()

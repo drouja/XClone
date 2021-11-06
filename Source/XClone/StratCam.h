@@ -23,6 +23,7 @@ protected:
 	void MoveForward(float Value);
 	void Zoom(float Value);
 	void RotateCam(float Value);
+	void MouseMovement(float Value);
 	void ChangeFocus();
 	void MoveTo(FVector loc);
 	void HighlightTile();
@@ -88,3 +89,5 @@ protected:
 	bool ismyturn();
 	
 };
+
+
