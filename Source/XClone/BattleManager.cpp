@@ -4,13 +4,8 @@
 #include "BattleManager.h"
 #include "xpawn.h"
 #include "tile.h"
-#include "StratCam.h"
 #include "Containers/Array.h"
-#include "Kismet/GameplayStatics.h"
 #include "Algo/Reverse.h"
-#include "DrawDebugHelpers.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Components/SplineComponent.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -20,6 +15,7 @@ ABattleManager::ABattleManager()
 	PrimaryActorTick.bCanEverTick = false;
 	ismoving = false;
 	bReplicates = true;
+	bAlwaysRelevant = true;
 
 	turn = 1;
 }

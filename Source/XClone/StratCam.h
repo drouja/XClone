@@ -71,6 +71,8 @@ protected:
 	TEnumAsByte<Team> playerteam;
 	UPROPERTY(BlueprintReadOnly)
 	bool ismoving;
+protected:
+	void clearsplinemesh();
 
 // Multiplayer functions
 protected:
@@ -83,5 +85,6 @@ protected:
 	FTimerHandle movehandle;
 	UFUNCTION(Server, Reliable, WithValidation)
 	void server_endturn();
+	bool ismyturn();
 	
 };

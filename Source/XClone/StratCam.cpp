@@ -86,10 +86,10 @@ void AStratCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (movetodesiredloc) SetActorLocation(FMath::VInterpTo(GetActorLocation(), desiredloc, DeltaTime, 10.0f));
-	if (HasAuthority())
+	if (!HasAuthority())
 	{
 		//ismoving = true;
-		UE_LOG(LogTemp, Warning, TEXT("Turn: %s"), ( (battlemanager->turn == 1) ? TEXT("Client") : TEXT("Server") ));
+		//UE_LOG(LogTemp, Warning, TEXT("Turn: %s"), ( (battlemanager->turn == 1) ? TEXT("Client") : TEXT("Server") ));
 	}
 }
 
@@ -173,11 +173,15 @@ void AStratCam::MoveTo(FVector loc)
 
 void AStratCam::HighlightTile()
 {
-	if (battlemanager->ismoving) return;
+	//If pawn currently moving, dont pathfind, if not your turn dont pathfind
+	if (battlemanager->ismoving || !ismyturn()) return;
+
+	//Get highlighted tile
 	FHitResult outhit{};
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
 	Atile* tile = Cast<Atile>(outhit.GetActor());
-	
+
+	//If the thing we're trying to highlight is a tile and it's not the tile we have been highlighting
 	if (tile != nullptr && oldtile != tile)
 	{
 		if (!battlemanager->Pathfind(tile, patharray, focusedpawn)) return;
@@ -190,16 +194,9 @@ void AStratCam::HighlightTile()
 
 		path->SetSplinePoints(patharray, ESplineCoordinateSpace::World,true);
 		
-		for (int i{ 0 }; i < pathmesh.Num(); i++) //For some reason pathmesh.empty doesnt call destructors so we have to do it here :(
-		{
-			if (pathmesh[i] != nullptr)
-			{
-				pathmesh[i]->DestroyComponent();
-			}
-		}
+		clearsplinemesh();
 
-		pathmesh.Empty();
-
+		//Draw path between target and pawn using spline components
 		for (int i{ 0 }; i < patharray.Num() - 1; i++)
 		{
 			pathmesh.Add(NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass()));
@@ -214,6 +211,7 @@ void AStratCam::HighlightTile()
 
 void AStratCam::RequestMove()
 {
+	if (!ismyturn()) return;
 	startmovepawn();
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{
@@ -224,8 +222,31 @@ void AStratCam::RequestMove()
 
 void AStratCam::EndTurn()
 {
-	if(!HasAuthority() && battlemanager->turn == 1)server_endturn();
-	else if (HasAuthority() && battlemanager->turn == 0) battlemanager->turn = 1;
+	if(!HasAuthority() && battlemanager->turn == 1)
+	{
+		clearsplinemesh();
+		server_endturn();
+	}
+	else if (HasAuthority() && battlemanager->turn == 0)
+	{
+		clearsplinemesh();
+		battlemanager->turn = 1;
+	}
+}
+
+void AStratCam::clearsplinemesh()
+{
+	//Destroy old spline components / stop drawing path between old target and pawn
+	for (int i{ 0 }; i < pathmesh.Num(); i++)
+	{
+		if (pathmesh[i] != nullptr)
+		{
+			pathmesh[i]->DestroyComponent();
+		}
+	}
+	pathmesh.Empty();
+	if (HasAuthority())
+	UE_LOG(LogTemp, Warning, TEXT("???????"));
 }
 
 void AStratCam::startmovepawn()
@@ -233,8 +254,8 @@ void AStratCam::startmovepawn()
 	if (ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
 	movedist = 0;
 	battlemanager->ismoving = true;
+	clearsplinemesh();
 	GetWorldTimerManager().SetTimer(movehandle, this, &AStratCam::movepawn, 0.01, true, 0.0f);
-	if (HasAuthority()) UE_LOG(LogTemp, Warning, TEXT("Wtf"));
 }
 
 void AStratCam::movepawn()
@@ -250,6 +271,13 @@ void AStratCam::movepawn()
 	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
 	FRotator rot = path->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
 	server_requestmove(loc, rot, focusedpawn);
+}
+
+bool AStratCam::ismyturn()
+{
+	if (HasAuthority() && battlemanager->turn == 0) return true;
+	if (!HasAuthority() && battlemanager->turn == 1) return true;
+	return false;
 }
 
 void AStratCam::server_endturn_Implementation()
