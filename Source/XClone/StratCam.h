@@ -19,23 +19,22 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void MoveTo(FVector loc);
+public:
 	void MoveRight(float Value);
 	void MoveForward(float Value);
 	void Zoom(float Value);
 	void RotateCam(float Value);
-	void MouseMovement(float Value);
 	void ChangeFocus();
-	void MoveTo(FVector loc);
-	void HighlightTile();
 	void RequestMove();
 	void EndTurn();
+	void HighlightTile();
+	
 
 private:
 	FTimerHandle findtile;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	class UCameraComponent* Cam;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class USpringArmComponent* SpringArmComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -49,6 +48,8 @@ protected:
 	TArray<class USplineMeshComponent*> pathmesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UStaticMesh* meshref;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	class UCameraComponent* Cam;
 
 public:	
 	// Called every frame
@@ -63,16 +64,16 @@ public:
 	FVector desiredloc;
 	bool movetodesiredloc;
 	TArray<FVector> patharray;
+	class Axpawn* focusedpawn;
 protected:
 	class Atile* oldtile;
 	TArray<class Axpawn*> friendlypawns;
-	class Axpawn* focusedpawn;
 	int focusindex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	TEnumAsByte<Team> playerteam;
 	UPROPERTY(BlueprintReadOnly)
 	bool ismoving;
-protected:
+public:
 	void clearsplinemesh();
 
 // Multiplayer functions
@@ -87,6 +88,14 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void server_endturn();
 	bool ismyturn();
+
+	//Hud Stuff
+public:
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> StandardHud;
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> AimHud;
+	UUserWidget* Currenthud;
 	
 };
 

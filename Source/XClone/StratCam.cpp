@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "xpawn.h"
 #include "tile.h"
+#include "Blueprint/UserWidget.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
@@ -79,6 +80,14 @@ void AStratCam::BeginPlay()
 			friendlypawns.Add(foundpawn);
 	}
 	focusedpawn = friendlypawns[0];
+
+	//Setup Hud
+	if(PC!=nullptr && PC->IsLocalPlayerController())
+	{
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),StandardHud);
+		Currenthud->AddToViewport();
+	}
+	
 }
 
 // Called every frame
@@ -97,15 +106,6 @@ void AStratCam::Tick(float DeltaTime)
 void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAxis("MoveForward", this, &AStratCam::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AStratCam::MoveRight);
-	PlayerInputComponent->BindAxis("Scroll", this, &AStratCam::Zoom);
-	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
-	PlayerInputComponent->BindAxis("MouseMove", this, &AStratCam::MouseMovement);
-	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
-	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &AStratCam::RequestMove);
-	PlayerInputComponent->BindAction("Enter", IE_Pressed, this, &AStratCam::EndTurn);
-
 }
 
 void AStratCam::server_requestmove_Implementation(FVector loc, FRotator rot, Axpawn* focusedpawn1)
@@ -138,11 +138,6 @@ void AStratCam::MoveRight(float Value)
 		rv.Z = 0;
 		SetActorLocation(GetActorLocation() + rv * speed);
 	}
-}
-
-void AStratCam::MouseMovement(float Value)
-{
-	HighlightTile();
 }
 
 void AStratCam::Zoom(float Value)

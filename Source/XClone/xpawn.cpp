@@ -3,8 +3,10 @@
 
 #include "xpawn.h"
 #include "tile.h"
+#include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
@@ -18,6 +20,10 @@ Axpawn::Axpawn()
 	pawnmesh->SetupAttachment(Arootcomponent);
 	collider = CreateDefaultSubobject<UCapsuleComponent>("Collider");
 	collider->SetupAttachment(Arootcomponent);
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp->SetupAttachment(Arootcomponent);
+	Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Cam->SetupAttachment(SpringArmComp);
 
 	movedist = 10;
 

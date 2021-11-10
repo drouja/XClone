@@ -18,6 +18,13 @@ class XCLONE_API Axpawn : public APawn
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	class USpringArmComponent* SpringArmComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	class UCameraComponent* Cam;
+
+	
 public:
 	// Sets default values for this pawn's properties
 	Axpawn();
