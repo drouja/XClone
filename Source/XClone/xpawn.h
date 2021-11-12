@@ -37,6 +37,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
 	class UStaticMeshComponent* pawnmesh;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
+	class UStaticMeshComponent* gunmesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Mesh)
 	class UCapsuleComponent* collider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	class USceneComponent* Arootcomponent;

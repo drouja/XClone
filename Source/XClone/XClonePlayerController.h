@@ -40,6 +40,9 @@ protected:
 	virtual void ToAimShot();
 	UFUNCTION(BlueprintCallable)
 	virtual void ToStandardMode();
+	UFUNCTION(BlueprintCallable)
+	virtual bool NextTarget(int direction);
+	int index;
 
 public:
 	virtual void SetupPlayerInputComponent();

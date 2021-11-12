@@ -18,6 +18,8 @@ Axpawn::Axpawn()
 	this->SetRootComponent(Arootcomponent);
 	pawnmesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	pawnmesh->SetupAttachment(Arootcomponent);
+	gunmesh = CreateDefaultSubobject<UStaticMeshComponent>("GunMesh");
+	gunmesh->SetupAttachment(Arootcomponent);
 	collider = CreateDefaultSubobject<UCapsuleComponent>("Collider");
 	collider->SetupAttachment(Arootcomponent);
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));

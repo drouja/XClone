@@ -65,6 +65,9 @@ public:
 	bool movetodesiredloc;
 	TArray<FVector> patharray;
 	class Axpawn* focusedpawn;
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TArray<class Axpawn*> TargetPawns;
+	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;
 	TArray<class Axpawn*> friendlypawns;
@@ -75,6 +78,7 @@ protected:
 	bool ismoving;
 public:
 	void clearsplinemesh();
+	void GetTargetsInRange();
 
 // Multiplayer functions
 protected:

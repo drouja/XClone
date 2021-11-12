@@ -158,6 +158,7 @@ void AStratCam::RotateCam(float Value)
 
 void AStratCam::ChangeFocus()
 {
+	if (battlemanager->ismoving) return;
 	focusindex++;
 	if (focusindex >= friendlypawns.Num()) focusindex = 0;
 	focusedpawn = friendlypawns[focusindex];
@@ -248,6 +249,39 @@ void AStratCam::clearsplinemesh()
 		}
 	}
 	pathmesh.Empty();
+}
+
+void AStratCam::GetTargetsInRange()
+{
+	TArray<AActor*> actorsToIgnore;
+	actorsToIgnore.Add(focusedpawn);
+	TArray<AActor* > foundpawns;
+	FHitResult Outhit{};
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
+	TargetPawns.Empty();
+	for (AActor* Actor : foundpawns)
+	{
+		Axpawn* foundpawn = Cast<Axpawn>(Actor);
+		if (foundpawn != nullptr &&
+			foundpawn->team != playerteam &&
+			UKismetSystemLibrary::LineTraceSingle(this,
+				focusedpawn->GetActorLocation(),
+				foundpawn->GetActorLocation(),
+				UEngineTypes::ConvertToTraceType(ECC_Visibility),
+				false, actorsToIgnore,
+				EDrawDebugTrace::None, Outhit,
+				true, FLinearColor::Red,
+				FLinearColor::Green, 0.0f)
+			)
+			if(Outhit.Actor == Actor)
+			{
+				TargetPawns.Add(foundpawn);
+			}
+		if (TargetPawns.Num()>0)
+		{
+			targetedpawn = TargetPawns[0];
+		}
+	}
 }
 
 void AStratCam::startmovepawn()

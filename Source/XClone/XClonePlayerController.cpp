@@ -5,6 +5,7 @@
 #include "StratCam.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AXClonePlayerController::AXClonePlayerController()
 {
@@ -147,6 +148,9 @@ void AXClonePlayerController::ToAimShot()
 		controlledpawn->Currenthud = CreateWidget<UUserWidget>(GetWorld(),controlledpawn->AimHud);
 		controlledpawn->Currenthud->AddToViewport();
 		controlledpawn->clearsplinemesh();
+		index = -1;
+		controlledpawn->GetTargetsInRange();
+		NextTarget(1);
 		break;
 	case AimShot:
 		return;
@@ -171,5 +175,32 @@ void AXClonePlayerController::ToStandardMode()
 	default:
 		return;
 	}
+}
+
+bool AXClonePlayerController::NextTarget(int direction)
+{
+	if(controlledpawn->TargetPawns.Num()<1) return false;
+	if(direction>=0)
+	{
+		index++;
+		if (index>=controlledpawn->TargetPawns.Num())
+		{
+			index=0;
+		}
+	}
+	else
+	{
+		index--;
+		if(index<0)
+		{
+			index = controlledpawn->TargetPawns.Num()-1;
+		}
+	}
+	controlledpawn->targetedpawn = controlledpawn->TargetPawns[index];
+	FRotator FaceRot = UKismetMathLibrary::MakeRotFromXZ(
+		controlledpawn->targetedpawn->GetActorLocation()-controlledpawn->focusedpawn->GetActorLocation(),
+		controlledpawn->focusedpawn->GetActorUpVector());
+	controlledpawn->focusedpawn->SetActorRotation(FaceRot);
+	return true;
 }
 
