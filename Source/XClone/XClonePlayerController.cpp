@@ -150,7 +150,7 @@ void AXClonePlayerController::ToAimShot()
 		controlledpawn->clearsplinemesh();
 		index = -1;
 		controlledpawn->GetTargetsInRange();
-		NextTarget(1);
+		NextTarget(1,true);
 		break;
 	case AimShot:
 		return;
@@ -177,7 +177,7 @@ void AXClonePlayerController::ToStandardMode()
 	}
 }
 
-bool AXClonePlayerController::NextTarget(int direction)
+bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 {
 	if(controlledpawn->TargetPawns.Num()<1) return false;
 	if(direction>=0)
@@ -197,10 +197,21 @@ bool AXClonePlayerController::NextTarget(int direction)
 		}
 	}
 	controlledpawn->targetedpawn = controlledpawn->TargetPawns[index];
-	FRotator FaceRot = UKismetMathLibrary::MakeRotFromXZ(
+	TargetRot = UKismetMathLibrary::MakeRotFromXZ(
 		controlledpawn->targetedpawn->GetActorLocation()-controlledpawn->focusedpawn->GetActorLocation(),
 		controlledpawn->focusedpawn->GetActorUpVector());
-	controlledpawn->focusedpawn->SetActorRotation(FaceRot);
+	GetWorldTimerManager().ClearTimer(TurnHandle);
+	if (!binstant)
+		GetWorldTimerManager().SetTimer(TurnHandle, this, &AXClonePlayerController::Turn, 0.01, true, 0.0f);
+	else controlledpawn->focusedpawn->SetActorRotation(TargetRot);
 	return true;
+}
+
+void AXClonePlayerController::Turn()
+{
+	Axpawn* pawn = controlledpawn->focusedpawn;
+	pawn->SetActorRotation(UKismetMathLibrary::RInterpTo(pawn->GetActorRotation(),
+		TargetRot,GetWorld()->DeltaTimeSeconds,4.0f));
+	if(pawn->GetActorRotation().Equals(TargetRot,0.01)) GetWorldTimerManager().ClearTimer(TurnHandle);
 }
 

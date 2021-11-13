@@ -41,8 +41,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void ToStandardMode();
 	UFUNCTION(BlueprintCallable)
-	virtual bool NextTarget(int direction);
+	virtual bool NextTarget(int direction, bool binstant = false);
 	int index;
+	void Turn();
+	FRotator TargetRot;
+protected:
+	FTimerHandle TurnHandle;
 
 public:
 	virtual void SetupPlayerInputComponent();
