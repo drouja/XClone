@@ -61,7 +61,8 @@ public:
 	TEnumAsByte<Team> team;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	FLinearColor team_colour;
-	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category=Main)
+	int ActionsLeft;
 	
 
 };

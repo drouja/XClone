@@ -27,7 +27,9 @@ Axpawn::Axpawn()
 	Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Cam->SetupAttachment(SpringArmComp);
 
-	movedist = 10;
+	ActionsLeft = 2;
+
+	movedist = 5;
 
 }
 

@@ -74,8 +74,6 @@ protected:
 	int focusindex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	TEnumAsByte<Team> playerteam;
-	UPROPERTY(BlueprintReadOnly)
-	bool ismoving;
 public:
 	void clearsplinemesh();
 	void GetTargetsInRange();

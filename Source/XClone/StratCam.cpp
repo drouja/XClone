@@ -37,7 +37,6 @@ AStratCam::AStratCam()
 	oldtile = nullptr;
 
 	focusindex = 0;
-	ismoving = false;
 }
 
 // Called when the game starts or when spawned
@@ -227,14 +226,21 @@ void AStratCam::EndTurn()
 	if(!HasAuthority() && battlemanager->turn == 1)
 	{
 		clearsplinemesh();
+		
+        for (Axpawn* Actor : friendlypawns)
+        {
+            Actor->ActionsLeft = 2;
+        }
 		server_endturn();
 	}
 	else if (HasAuthority() && battlemanager->turn == 0)
 	{
 		clearsplinemesh();
+		for (Axpawn* Actor : friendlypawns)
+		{
+			Actor->ActionsLeft = 2;
+		}
 		battlemanager->turn = 1;
-		if (HasAuthority())
-		UE_LOG(LogTemp, Warning, TEXT("???????"));
 	}
 }
 
@@ -286,9 +292,10 @@ void AStratCam::GetTargetsInRange()
 
 void AStratCam::startmovepawn()
 {
-	if (ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
+	if (battlemanager->ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
 	movedist = 0;
 	battlemanager->ismoving = true;
+	focusedpawn->ActionsLeft--;
 	clearsplinemesh();
 	GetWorldTimerManager().SetTimer(movehandle, this, &AStratCam::movepawn, 0.01, true, 0.0f);
 }

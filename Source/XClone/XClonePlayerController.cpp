@@ -90,6 +90,7 @@ void AXClonePlayerController::MouseMovement(float Value)
 	switch (Mode)
 	{
 	case Standard:
+		if (controlledpawn->focusedpawn->ActionsLeft<=0) return;
 		controlledpawn->HighlightTile();
 	case AimShot:
 		return;
@@ -116,6 +117,7 @@ void AXClonePlayerController::LeftClick()
 	switch (Mode)
 	{
 	case Standard:
+		if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
 		controlledpawn->RequestMove();
 	case AimShot:
 		return;
