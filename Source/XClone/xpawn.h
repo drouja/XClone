@@ -44,6 +44,14 @@ protected:
 	class USceneComponent* Arootcomponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UMaterialInstanceDynamic* team_mat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
+	class USceneComponent* HeadLoc;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
+	class USceneComponent* BodyLoc;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
+	class USceneComponent* LegLoc;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
+	class USceneComponent* GunLoc;
 
 public:	
 	// Called every frame

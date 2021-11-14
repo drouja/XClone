@@ -26,6 +26,14 @@ Axpawn::Axpawn()
 	SpringArmComp->SetupAttachment(Arootcomponent);
 	Cam = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Cam->SetupAttachment(SpringArmComp);
+	HeadLoc = CreateDefaultSubobject<USceneComponent>("HeadLoc");
+	HeadLoc->SetupAttachment(Arootcomponent);
+	BodyLoc = CreateDefaultSubobject<USceneComponent>("BodyLoc");
+	BodyLoc->SetupAttachment(Arootcomponent);
+	LegLoc = CreateDefaultSubobject<USceneComponent>("LegLoc");
+	LegLoc->SetupAttachment(Arootcomponent);
+	GunLoc = CreateDefaultSubobject<USceneComponent>("GunLoc");
+	GunLoc->SetupAttachment(Arootcomponent);
 
 	ActionsLeft = 2;
 
