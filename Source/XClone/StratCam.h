@@ -67,6 +67,8 @@ public:
 	class Axpawn* focusedpawn;
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	TArray<class Axpawn*> TargetPawns;
+	TArray<FVector> ShootFromLocs;
+	TArray<FVector> AimAtLocs;
 	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;

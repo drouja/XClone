@@ -45,6 +45,8 @@ protected:
 	int index;
 	void Turn();
 	FRotator TargetRot;
+	FVector TargetLoc;
+	FVector OGLoc;
 protected:
 	FTimerHandle TurnHandle;
 

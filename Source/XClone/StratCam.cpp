@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "xpawn.h"
 #include "tile.h"
+#include "ToolContextInterfaces.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
@@ -259,33 +260,70 @@ void AStratCam::clearsplinemesh()
 
 void AStratCam::GetTargetsInRange()
 {
+	TargetPawns.Empty();
+	AimAtLocs.Empty();
+	ShootFromLocs.Empty();
+	
 	TArray<AActor*> actorsToIgnore;
 	actorsToIgnore.Add(focusedpawn);
-	TArray<AActor* > foundpawns;
 	FHitResult Outhit{};
+	
+	TArray<AActor* > foundpawns;
+	TArray<Axpawn* > EnemyPawns;
+	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
-	TargetPawns.Empty();
 	for (AActor* Actor : foundpawns)
 	{
 		Axpawn* foundpawn = Cast<Axpawn>(Actor);
 		if (foundpawn != nullptr &&
-			foundpawn->team != playerteam &&
-			UKismetSystemLibrary::LineTraceSingle(this,
-				focusedpawn->GetActorLocation(),
-				foundpawn->GetActorLocation(),
+			foundpawn->team != playerteam) EnemyPawns.Add(foundpawn);
+	}
+	
+	FVector OGStartLoc {focusedpawn->GunLoc->GetComponentLocation()};
+	Atile* CurrentTile = focusedpawn->FindTile();
+	
+	for (Axpawn* pawn : EnemyPawns)
+	{
+		FVector StartLoc = OGStartLoc;
+		bool nextpawn = false;
+		TArray<USceneComponent*> Targets {};
+		Targets.Add(pawn->HeadLoc);
+		Targets.Add(pawn->BodyLoc);
+		Targets.Add(pawn->LegLoc);
+		
+		for (int i{-1};i<4;i++)
+		{
+			if (nextpawn) break;
+			if(i!=-1)
+			{
+				FVector NeighborLoc{};
+				if (CurrentTile->neighbours[i] !=nullptr)
+					 NeighborLoc = CurrentTile->neighbours[i]->GetActorLocation();
+				StartLoc.X=NeighborLoc.X;
+				StartLoc.Y=NeighborLoc.Y;
+			}
+			for (USceneComponent* Target : Targets)
+			{
+				if (UKismetSystemLibrary::LineTraceSingle(this,
+				StartLoc,
+				Target->GetComponentLocation(),
 				UEngineTypes::ConvertToTraceType(ECC_Visibility),
 				false, actorsToIgnore,
 				EDrawDebugTrace::None, Outhit,
 				true, FLinearColor::Red,
 				FLinearColor::Green, 0.0f)
 			)
-			if(Outhit.Actor == Actor)
-			{
-				TargetPawns.Add(foundpawn);
+				if(Outhit.Actor == pawn)
+				{
+					TargetPawns.Add(pawn);
+					AimAtLocs.Add(Target->GetComponentLocation());
+					ShootFromLocs.Add(StartLoc);
+					nextpawn = true;
+					break;
+				}
+				
 			}
-		if (TargetPawns.Num()>0)
-		{
-			targetedpawn = TargetPawns[0];
+			
 		}
 	}
 }

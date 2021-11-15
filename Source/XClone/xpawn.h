@@ -44,6 +44,7 @@ protected:
 	class USceneComponent* Arootcomponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UMaterialInstanceDynamic* team_mat;
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
 	class USceneComponent* HeadLoc;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
