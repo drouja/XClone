@@ -69,6 +69,7 @@ public:
 	TArray<class Axpawn*> TargetPawns;
 	TArray<FVector> ShootFromLocs;
 	TArray<FVector> AimAtLocs;
+	TArray<int> ExposureScores; 
 	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;

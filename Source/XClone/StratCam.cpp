@@ -263,6 +263,7 @@ void AStratCam::GetTargetsInRange()
 	TargetPawns.Empty();
 	AimAtLocs.Empty();
 	ShootFromLocs.Empty();
+	ExposureScores.Empty();
 	
 	TArray<AActor*> actorsToIgnore;
 	actorsToIgnore.Add(focusedpawn);
@@ -291,6 +292,7 @@ void AStratCam::GetTargetsInRange()
 		Targets.Add(pawn->BodyLoc);
 		Targets.Add(pawn->LegLoc);
 		
+		
 		for (int i{-1};i<4;i++)
 		{
 			if (nextpawn) break;
@@ -315,11 +317,15 @@ void AStratCam::GetTargetsInRange()
 			)
 				if(Outhit.Actor == pawn)
 				{
-					TargetPawns.Add(pawn);
-					AimAtLocs.Add(Target->GetComponentLocation());
-					ShootFromLocs.Add(StartLoc);
+					if (!nextpawn)
+					{
+						TargetPawns.Add(pawn);
+						ShootFromLocs.Add(StartLoc);
+						AimAtLocs.Add(Target->GetComponentLocation());
+						ExposureScores.Add(1);
+					}
+					else ExposureScores[ExposureScores.Num()-1]++;
 					nextpawn = true;
-					break;
 				}
 				
 			}

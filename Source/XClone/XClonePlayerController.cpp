@@ -145,6 +145,7 @@ void AXClonePlayerController::ToAimShot()
 	switch (Mode)
 	{
 	case Standard:
+		HitChance = 0.0f;
 		OGLoc = controlledpawn->focusedpawn->GetActorLocation();
 		Mode = AimShot;
 		controlledpawn->Currenthud->RemoveFromViewport();
@@ -216,6 +217,8 @@ bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 		controlledpawn->focusedpawn->SetActorRotation(TargetRot);
 		controlledpawn->focusedpawn->SetActorLocation(TargetLoc);
 	}
+	HitChance = (controlledpawn->ExposureScores[index]/3.0)-
+		UKismetMathLibrary::Lerp(0,0.3,(controlledpawn->targetedpawn->GetActorLocation()-controlledpawn->focusedpawn->GetActorLocation()).Size()/1000.0);
 	return true;
 }
 

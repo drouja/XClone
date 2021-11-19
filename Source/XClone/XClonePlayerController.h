@@ -49,6 +49,9 @@ protected:
 	FVector OGLoc;
 protected:
 	FTimerHandle TurnHandle;
+public:
+	UPROPERTY(BlueprintReadOnly)
+	float HitChance;
 
 public:
 	virtual void SetupPlayerInputComponent();
