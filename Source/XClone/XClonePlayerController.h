@@ -42,6 +42,8 @@ protected:
 	virtual void ToStandardMode();
 	UFUNCTION(BlueprintCallable)
 	virtual bool NextTarget(int direction, bool binstant = false);
+	UFUNCTION(BlueprintCallable)
+	virtual void Shoot();
 	int index;
 	void Turn();
 	FRotator TargetRot;

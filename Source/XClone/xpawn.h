@@ -23,6 +23,8 @@ protected:
 	class USpringArmComponent* SpringArmComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class UCameraComponent* Cam;
+	UPROPERTY(EditDefaultsOnly,Category="ActorSpawning")
+	TSubclassOf<class ABullet> ABulletBP;
 
 	
 public:
@@ -44,6 +46,8 @@ protected:
 	class USceneComponent* Arootcomponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UMaterialInstanceDynamic* team_mat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FX)
+	class UNiagaraComponent* MuzzleFlash;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
 	class USceneComponent* HeadLoc;
@@ -53,6 +57,10 @@ public:
 	class USceneComponent* LegLoc;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
 	class USceneComponent* GunLoc;
+protected:
+	float Base_Accuracy = 1;
+public:
+	void Attack(float Acc_Modifier, FVector Target);
 
 public:	
 	// Called every frame

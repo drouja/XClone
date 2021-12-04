@@ -186,7 +186,12 @@ void AXClonePlayerController::ToStandardMode()
 
 bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 {
-	if(controlledpawn->TargetPawns.Num()<1) return false;
+	if(controlledpawn->TargetPawns.Num()<1)
+	{
+		controlledpawn->targetedpawn = nullptr;
+		HitChance = -1.0;
+		return false;
+	}
 	if(direction>=0)
 	{
 		index++;
@@ -232,3 +237,9 @@ void AXClonePlayerController::Turn()
 	if(pawn->GetActorRotation().Equals(TargetRot,0.01)) GetWorldTimerManager().ClearTimer(TurnHandle);
 }
 
+void AXClonePlayerController::Shoot()
+{
+	if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
+	if (HitChance>0.0)
+	controlledpawn->focusedpawn->Attack(HitChance,controlledpawn->targetedpawn->GetActorLocation());
+}

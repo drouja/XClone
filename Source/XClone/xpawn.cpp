@@ -3,11 +3,14 @@
 
 #include "xpawn.h"
 #include "tile.h"
+#include "Bullet.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Niagara/Public/NiagaraComponent.h"
+#include "Niagara/Public/NiagaraFunctionLibrary.h"
 
 // Sets default values
 Axpawn::Axpawn()
@@ -34,6 +37,9 @@ Axpawn::Axpawn()
 	LegLoc->SetupAttachment(Arootcomponent);
 	GunLoc = CreateDefaultSubobject<USceneComponent>("GunLoc");
 	GunLoc->SetupAttachment(Arootcomponent);
+	MuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>("MuzzleFlash");
+	MuzzleFlash->SetupAttachment(gunmesh);
+	MuzzleFlash->Deactivate();
 
 	ActionsLeft = 2;
 
@@ -56,6 +62,17 @@ void Axpawn::BeginPlay()
 		team_colour = FLinearColor{0,0,1};
 	}
 	team_mat->SetVectorParameterValue(TEXT("team_colour"),team_colour);
+}
+
+void Axpawn::Attack(float Acc_Modifier, FVector Target)
+{
+	FActorSpawnParameters SpawnParams;
+ 
+	//Actual Spawn. The following function returns a reference to the spawned actor
+	ABullet* ActorRef = GetWorld()->SpawnActor<ABullet>(ABulletBP, GunLoc->GetComponentTransform(), SpawnParams);
+	MuzzleFlash->Activate(true);
+	ActorRef->GoTo(Target);
+	// Attempt to damage pawn
 }
 
 // Called every frame
