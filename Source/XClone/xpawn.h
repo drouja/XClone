@@ -80,6 +80,9 @@ public:
 	FLinearColor team_colour;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category=Main)
 	int ActionsLeft;
-	
+// Server Properties
+protected:
+	//UPROPERTY(Replicated)
+	float Health;
 
 };

@@ -9,12 +9,15 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Niagara/Public/NiagaraComponent.h"
 #include "Niagara/Public/NiagaraFunctionLibrary.h"
 
 // Sets default values
 Axpawn::Axpawn()
 {
+	//bReplicates = true;
+	
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	Arootcomponent = CreateDefaultSubobject<USceneComponent>("Root");
@@ -45,6 +48,8 @@ Axpawn::Axpawn()
 
 	movedist = 5;
 
+	Health = 5;
+
 }
 
 // Called when the game starts or when spawned
@@ -63,6 +68,13 @@ void Axpawn::BeginPlay()
 	}
 	team_mat->SetVectorParameterValue(TEXT("team_colour"),team_colour);
 }
+
+/*
+void Axpawn::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+	DOREPLIFETIME( Axpawn, Health );
+}
+*/
 
 void Axpawn::Attack(float Acc_Modifier, FVector Target)
 {
