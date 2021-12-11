@@ -44,8 +44,11 @@ protected:
 	virtual bool NextTarget(int direction, bool binstant = false);
 	UFUNCTION(BlueprintCallable)
 	virtual void Shoot();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void server_shoot(Axpawn* fp,float hc, FVector loc, Axpawn* tp);
 	int index;
 	void Turn();
+	
 	FRotator TargetRot;
 	FVector TargetLoc;
 	FVector OGLoc;

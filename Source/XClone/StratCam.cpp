@@ -77,7 +77,10 @@ void AStratCam::BeginPlay()
 	{
 		Axpawn* foundpawn = Cast<Axpawn>(Actor);
 		if (foundpawn != nullptr && foundpawn->team == playerteam)
+		{
 			friendlypawns.Add(foundpawn);
+		}
+			
 	}
 	focusedpawn = friendlypawns[0];
 

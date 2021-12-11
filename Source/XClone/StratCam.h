@@ -83,7 +83,7 @@ public:
 
 // Multiplayer functions
 protected:
-	 UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 	void server_requestmove(FVector loc, FRotator rot, Axpawn* focusedpawn1);
 	void startmovepawn();
 	UFUNCTION()

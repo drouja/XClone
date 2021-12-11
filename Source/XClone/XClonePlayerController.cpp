@@ -241,5 +241,15 @@ void AXClonePlayerController::Shoot()
 {
 	if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
 	if (HitChance>0.0)
-	controlledpawn->focusedpawn->Attack(HitChance,controlledpawn->targetedpawn->GetActorLocation());
+		server_shoot(controlledpawn->focusedpawn,HitChance,controlledpawn->targetedpawn->GetActorLocation(),controlledpawn->targetedpawn);
+}
+
+void AXClonePlayerController::server_shoot_Implementation(Axpawn* fp, float hc, FVector loc, Axpawn* tp)
+{
+	fp->Attack(hc,loc,tp);
+}
+
+bool AXClonePlayerController::server_shoot_Validate(Axpawn* fp,float hc, FVector loc, Axpawn* tp)
+{
+	return true;
 }

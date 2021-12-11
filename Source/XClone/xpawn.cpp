@@ -12,11 +12,13 @@
 #include "Net/UnrealNetwork.h"
 #include "Niagara/Public/NiagaraComponent.h"
 #include "Niagara/Public/NiagaraFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 Axpawn::Axpawn()
 {
-	//bReplicates = true;
+	bReplicates = true;
+	
 	
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -49,6 +51,9 @@ Axpawn::Axpawn()
 	movedist = 5;
 
 	Health = 5;
+	MaxHealth = Health;
+
+	MaxDamage = 3;
 
 }
 
@@ -69,14 +74,13 @@ void Axpawn::BeginPlay()
 	team_mat->SetVectorParameterValue(TEXT("team_colour"),team_colour);
 }
 
-/*
-void Axpawn::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+void Axpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
-	DOREPLIFETIME( Axpawn, Health );
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(Axpawn, Health);
 }
-*/
 
-void Axpawn::Attack(float Acc_Modifier, FVector Target)
+void Axpawn::Attack(float Acc_Modifier, FVector Target, Axpawn * TargetPawn)
 {
 	FActorSpawnParameters SpawnParams;
  
@@ -85,8 +89,19 @@ void Axpawn::Attack(float Acc_Modifier, FVector Target)
 	MuzzleFlash->Activate(true);
 	ActorRef->GoTo(Target);
 	// Attempt to damage pawn
+	TargetPawn->TakeDamage(Acc_Modifier,MaxDamage);
 }
 
+void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_) //Move to stratcam or playercontroller
+{
+	if (UKismetMathLibrary::RandomBoolWithWeight(Acc_Modifier))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Some warning message") );
+		if (Acc_Modifier>0.7) Health-=MaxDamage_;
+		else if (Acc_Modifier>0.3)  Health-=UKismetMathLibrary::RandomIntegerInRange(1,MaxDamage_);
+		else Health-=1;
+	}
+}
 // Called every frame
 void Axpawn::Tick(float DeltaTime)
 {

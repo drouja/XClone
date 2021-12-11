@@ -60,7 +60,8 @@ public:
 protected:
 	float Base_Accuracy = 1;
 public:
-	void Attack(float Acc_Modifier, FVector Target);
+	void Attack(float Acc_Modifier, FVector Target, Axpawn* TargetPawn);
+	void TakeDamage(float Acc_Modifier, int MaxDamage_);
 
 public:	
 	// Called every frame
@@ -82,7 +83,9 @@ public:
 	int ActionsLeft;
 // Server Properties
 protected:
-	//UPROPERTY(Replicated)
-	float Health;
-
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	int Health;
+	UPROPERTY(BlueprintReadOnly)
+	int MaxHealth;
+	int MaxDamage;
 };
