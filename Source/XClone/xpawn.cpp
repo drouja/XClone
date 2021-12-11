@@ -82,17 +82,12 @@ void Axpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetim
 
 void Axpawn::Attack(float Acc_Modifier, FVector Target, Axpawn * TargetPawn)
 {
-	FActorSpawnParameters SpawnParams;
- 
-	//Actual Spawn. The following function returns a reference to the spawned actor
-	ABullet* ActorRef = GetWorld()->SpawnActor<ABullet>(ABulletBP, GunLoc->GetComponentTransform(), SpawnParams);
-	MuzzleFlash->Activate(true);
-	ActorRef->GoTo(Target);
+	ShootFx(Target);
 	// Attempt to damage pawn
 	TargetPawn->TakeDamage(Acc_Modifier,MaxDamage);
 }
 
-void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_) //Move to stratcam or playercontroller
+void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_)
 {
 	if (UKismetMathLibrary::RandomBoolWithWeight(Acc_Modifier))
 	{
@@ -102,6 +97,17 @@ void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_) //Move to stratcam o
 		else Health-=1;
 	}
 }
+
+void Axpawn::ShootFx(FVector Target)
+{
+	FActorSpawnParameters SpawnParams;
+ 
+	//Actual Spawn. The following function returns a reference to the spawned actor
+	ABullet* ActorRef = GetWorld()->SpawnActor<ABullet>(ABulletBP, GunLoc->GetComponentTransform(), SpawnParams);
+	MuzzleFlash->Activate(true);
+	ActorRef->GoTo(Target);
+}
+
 // Called every frame
 void Axpawn::Tick(float DeltaTime)
 {

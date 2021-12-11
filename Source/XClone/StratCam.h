@@ -92,6 +92,7 @@ protected:
 	FTimerHandle movehandle;
 	UFUNCTION(Server, Reliable, WithValidation)
 	void server_endturn();
+public:
 	bool ismyturn();
 
 	//Hud Stuff

@@ -179,7 +179,7 @@ void AStratCam::MoveTo(FVector loc)
 void AStratCam::HighlightTile()
 {
 	//If pawn currently moving, dont pathfind, if not your turn dont pathfind
-	if (battlemanager->ismoving || !ismyturn()) return;
+	if (battlemanager->ismoving) return;
 
 	//Get highlighted tile
 	FHitResult outhit{};
@@ -216,7 +216,6 @@ void AStratCam::HighlightTile()
 
 void AStratCam::RequestMove()
 {
-	if (!ismyturn()) return;
 	startmovepawn();
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{

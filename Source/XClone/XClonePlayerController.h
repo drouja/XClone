@@ -34,6 +34,7 @@ private:
 	void Tab();
 	void LeftClick();
 	void Enter();
+	bool CanAct();
 
 protected:
 	UFUNCTION(BlueprintCallable)

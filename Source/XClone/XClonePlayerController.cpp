@@ -37,6 +37,7 @@ void AXClonePlayerController::MoveRight(float Value)
 	{
 	case Standard:
 		controlledpawn->MoveRight(Value);
+		return;
 	case AimShot:
 		return;
 	default:
@@ -51,6 +52,7 @@ void AXClonePlayerController::MoveForward(float Value)
 	{
 	case Standard:
 		controlledpawn->MoveForward(Value);
+		return;
 	case AimShot:
 		return;
 	default:
@@ -64,6 +66,7 @@ void AXClonePlayerController::Scroll(float Value)
 	{
 	case Standard:
 		controlledpawn->Zoom(Value);
+		return;
 	case AimShot:
 		return;
 	default:
@@ -77,6 +80,7 @@ void AXClonePlayerController::Q_E(float Value)
 	{
 	case Standard:
 		controlledpawn->RotateCam(Value);
+		return;
 	case AimShot:
 		return;
 	default:
@@ -90,8 +94,9 @@ void AXClonePlayerController::MouseMovement(float Value)
 	switch (Mode)
 	{
 	case Standard:
-		if (controlledpawn->focusedpawn->ActionsLeft<=0) return;
+		if (!CanAct()) return;
 		controlledpawn->HighlightTile();
+		return;
 	case AimShot:
 		return;
 	default:
@@ -105,6 +110,7 @@ void AXClonePlayerController::Tab()
 	{
 	case Standard:
 		controlledpawn->ChangeFocus();
+		return;
 	case AimShot:
 		NextTarget(1);
 		return;
@@ -118,8 +124,9 @@ void AXClonePlayerController::LeftClick()
 	switch (Mode)
 	{
 	case Standard:
-		if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
+		if(!CanAct()) return;
 		controlledpawn->RequestMove();
+		return;
 	case AimShot:
 		return;
 	default:
@@ -133,6 +140,7 @@ void AXClonePlayerController::Enter()
 	{
 	case Standard:
 		controlledpawn->EndTurn();
+		return;
 	case AimShot:
 		return;
 	default:
@@ -140,11 +148,17 @@ void AXClonePlayerController::Enter()
 	}
 }
 
+bool AXClonePlayerController::CanAct()
+{
+	return (controlledpawn->focusedpawn->ActionsLeft>0 && controlledpawn->ismyturn());
+}
+
 void AXClonePlayerController::ToAimShot()
 {
 	switch (Mode)
 	{
 	case Standard:
+		if (!CanAct()) return;
 		HitChance = 0.0f;
 		OGLoc = controlledpawn->focusedpawn->GetActorLocation();
 		Mode = AimShot;
@@ -156,7 +170,7 @@ void AXClonePlayerController::ToAimShot()
 		index = -1;
 		controlledpawn->GetTargetsInRange();
 		NextTarget(1,true);
-		break;
+		return;
 	case AimShot:
 		return;
 	default:
@@ -178,7 +192,7 @@ void AXClonePlayerController::ToStandardMode()
 		SetViewTargetWithBlend(controlledpawn,0.5f);
 		controlledpawn->Currenthud = CreateWidget<UUserWidget>(GetWorld(),controlledpawn->StandardHud);
 		controlledpawn->Currenthud->AddToViewport();
-		break;
+		return;
 	default:
 		return;
 	}
@@ -241,7 +255,11 @@ void AXClonePlayerController::Shoot()
 {
 	if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
 	if (HitChance>0.0)
+	{
+		if (!HasAuthority()) controlledpawn->focusedpawn->ShootFx(controlledpawn->targetedpawn->GetActorLocation());
 		server_shoot(controlledpawn->focusedpawn,HitChance,controlledpawn->targetedpawn->GetActorLocation(),controlledpawn->targetedpawn);
+	}
+	
 }
 
 void AXClonePlayerController::server_shoot_Implementation(Axpawn* fp, float hc, FVector loc, Axpawn* tp)

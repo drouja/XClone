@@ -62,6 +62,7 @@ protected:
 public:
 	void Attack(float Acc_Modifier, FVector Target, Axpawn* TargetPawn);
 	void TakeDamage(float Acc_Modifier, int MaxDamage_);
+	void ShootFx(FVector Target);
 
 public:	
 	// Called every frame
