@@ -63,6 +63,8 @@ public:
 	void Attack(float Acc_Modifier, FVector Target, Axpawn* TargetPawn);
 	void TakeDamage(float Acc_Modifier, int MaxDamage_);
 	void ShootFx(FVector Target);
+	UFUNCTION(BlueprintNativeEvent)
+	void TakeDamageFx(int Damage);
 
 public:	
 	// Called every frame

@@ -89,13 +89,16 @@ void Axpawn::Attack(float Acc_Modifier, FVector Target, Axpawn * TargetPawn)
 
 void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_)
 {
+	int Damage = 0;
 	if (UKismetMathLibrary::RandomBoolWithWeight(Acc_Modifier))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Some warning message") );
-		if (Acc_Modifier>0.7) Health-=MaxDamage_;
-		else if (Acc_Modifier>0.3)  Health-=UKismetMathLibrary::RandomIntegerInRange(1,MaxDamage_);
-		else Health-=1;
+		if (Acc_Modifier>0.7) Damage = MaxDamage_;
+		else if (Acc_Modifier>0.3)  Damage =UKismetMathLibrary::RandomIntegerInRange(1,MaxDamage_);
+		else Damage=1;
 	}
+	Health-=Damage;
+	TakeDamageFx(Damage);
+	
 }
 
 void Axpawn::ShootFx(FVector Target)
@@ -106,6 +109,10 @@ void Axpawn::ShootFx(FVector Target)
 	ABullet* ActorRef = GetWorld()->SpawnActor<ABullet>(ABulletBP, GunLoc->GetComponentTransform(), SpawnParams);
 	MuzzleFlash->Activate(true);
 	ActorRef->GoTo(Target);
+}
+
+void Axpawn::TakeDamageFx_Implementation(int Damage)
+{
 }
 
 // Called every frame

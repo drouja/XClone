@@ -259,7 +259,6 @@ void AXClonePlayerController::Shoot()
 		if (!HasAuthority()) controlledpawn->focusedpawn->ShootFx(controlledpawn->targetedpawn->GetActorLocation());
 		server_shoot(controlledpawn->focusedpawn,HitChance,controlledpawn->targetedpawn->GetActorLocation(),controlledpawn->targetedpawn);
 	}
-	
 }
 
 void AXClonePlayerController::server_shoot_Implementation(Axpawn* fp, float hc, FVector loc, Axpawn* tp)
