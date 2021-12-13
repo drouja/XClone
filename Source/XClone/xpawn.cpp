@@ -13,6 +13,7 @@
 #include "Niagara/Public/NiagaraComponent.h"
 #include "Niagara/Public/NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BaseFloatText.h"
 
 // Sets default values
 Axpawn::Axpawn()
@@ -45,6 +46,8 @@ Axpawn::Axpawn()
 	MuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>("MuzzleFlash");
 	MuzzleFlash->SetupAttachment(gunmesh);
 	MuzzleFlash->Deactivate();
+	HitNotifWidget = CreateDefaultSubobject<UWidgetComponent>("HitNotifWidget");
+	HitNotifWidget->SetupAttachment(Arootcomponent);
 
 	ActionsLeft = 2;
 
@@ -54,7 +57,6 @@ Axpawn::Axpawn()
 	MaxHealth = Health;
 
 	MaxDamage = 3;
-
 }
 
 // Called when the game starts or when spawned
@@ -72,6 +74,8 @@ void Axpawn::BeginPlay()
 		team_colour = FLinearColor{0,0,1};
 	}
 	team_mat->SetVectorParameterValue(TEXT("team_colour"),team_colour);
+	if (HitNotifWidget!=nullptr)
+	asBaseFloatText = Cast<UBaseFloatText>(HitNotifWidget->GetWidget());
 }
 
 void Axpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -101,7 +105,7 @@ void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_)
 	
 }
 
-void Axpawn::ShootFx(FVector Target)
+void Axpawn::ShootFx_Implementation(FVector Target)
 {
 	FActorSpawnParameters SpawnParams;
  
@@ -111,8 +115,16 @@ void Axpawn::ShootFx(FVector Target)
 	ActorRef->GoTo(Target);
 }
 
+/*
+void Axpawn::ShootFx(FVector Target)
+{
+	
+}
+*/
+
 void Axpawn::TakeDamageFx_Implementation(int Damage)
 {
+	asBaseFloatText->PlayFloatText(Damage);
 }
 
 // Called every frame

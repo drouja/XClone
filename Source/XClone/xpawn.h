@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/Pawn.h"
 #include "xpawn.generated.h"
 
@@ -48,6 +49,9 @@ protected:
 	UMaterialInstanceDynamic* team_mat;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FX)
 	class UNiagaraComponent* MuzzleFlash;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = FX)
+	class UWidgetComponent* HitNotifWidget;
+	class UBaseFloatText * asBaseFloatText;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Targets)
 	class USceneComponent* HeadLoc;
@@ -62,8 +66,9 @@ protected:
 public:
 	void Attack(float Acc_Modifier, FVector Target, Axpawn* TargetPawn);
 	void TakeDamage(float Acc_Modifier, int MaxDamage_);
+	UFUNCTION(NetMulticast, Unreliable)
 	void ShootFx(FVector Target);
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(NetMulticast,Unreliable)
 	void TakeDamageFx(int Damage);
 
 public:	

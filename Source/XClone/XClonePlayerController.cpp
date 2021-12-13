@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BaseFloatText.h"
 
 AXClonePlayerController::AXClonePlayerController()
 {
@@ -256,7 +257,6 @@ void AXClonePlayerController::Shoot()
 	if(controlledpawn->focusedpawn->ActionsLeft<=0) return;
 	if (HitChance>0.0)
 	{
-		if (!HasAuthority()) controlledpawn->focusedpawn->ShootFx(controlledpawn->targetedpawn->GetActorLocation());
 		server_shoot(controlledpawn->focusedpawn,HitChance,controlledpawn->targetedpawn->GetActorLocation(),controlledpawn->targetedpawn);
 	}
 }
