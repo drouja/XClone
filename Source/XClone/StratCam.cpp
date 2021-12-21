@@ -9,12 +9,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "xpawn.h"
 #include "tile.h"
-#include "ToolContextInterfaces.h"
+#include "XCloneGameState.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "XCloneGameState.h"
 
 // Sets default values
 AStratCam::AStratCam()
@@ -90,6 +91,8 @@ void AStratCam::BeginPlay()
 		Currenthud = CreateWidget<UUserWidget>(GetWorld(),StandardHud);
 		Currenthud->AddToViewport();
 	}
+
+	GameState = Cast<AXCloneGameState>(GetWorld()->GetGameState());
 	
 }
 
@@ -226,24 +229,17 @@ void AStratCam::RequestMove()
 
 void AStratCam::EndTurn()
 {
-	if(!HasAuthority() && battlemanager->turn == 1)
+	if(ismyturn())
 	{
 		clearsplinemesh();
-		
+		//Currenthud->RemoveFromViewport();
+		//Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
+		//Currenthud->AddToViewport();
         for (Axpawn* Actor : friendlypawns)
         {
             Actor->ActionsLeft = 2;
         }
-		server_endturn();
-	}
-	else if (HasAuthority() && battlemanager->turn == 0)
-	{
-		clearsplinemesh();
-		for (Axpawn* Actor : friendlypawns)
-		{
-			Actor->ActionsLeft = 2;
-		}
-		battlemanager->turn = 1;
+		CallEndTurn();
 	}
 }
 
@@ -363,17 +359,12 @@ void AStratCam::movepawn()
 
 bool AStratCam::ismyturn()
 {
-	if (HasAuthority() && battlemanager->turn == 0) return true;
-	if (!HasAuthority() && battlemanager->turn == 1) return true;
+	if (HasAuthority() && GameState->Turn == 0) return true;
+	if (!HasAuthority() && GameState->Turn == 1) return true;
 	return false;
 }
 
-void AStratCam::server_endturn_Implementation()
+void AStratCam::CallEndTurn_Implementation()
 {
-	battlemanager->turn = 0;
-}
-
-bool AStratCam::server_endturn_Validate()
-{
-	return true;
+	GameState->EndTurn();
 }

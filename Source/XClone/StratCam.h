@@ -50,7 +50,7 @@ protected:
 	UStaticMesh* meshref;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class UCameraComponent* Cam;
-
+	class AXCloneGameState* GameState;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -90,8 +90,6 @@ protected:
 	void movepawn();
 	float movedist;
 	FTimerHandle movehandle;
-	UFUNCTION(Server, Reliable, WithValidation)
-	void server_endturn();
 public:
 	bool ismyturn();
 
@@ -101,7 +99,12 @@ public:
 	TSubclassOf<UUserWidget> StandardHud;
 	UPROPERTY(EditAnywhere, Category=HUD)
 	TSubclassOf<UUserWidget> AimHud;
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> EnemyTurnHud;
 	UUserWidget* Currenthud;
+private:
+	UFUNCTION(Server,Reliable)
+	void CallEndTurn();
 	
 };
 
