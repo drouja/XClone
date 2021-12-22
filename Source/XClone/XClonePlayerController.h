@@ -64,6 +64,7 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mode)
 	TEnumAsByte<EControlMode> Mode;
-	
+public:
+	void StartTurn();
 	
 };

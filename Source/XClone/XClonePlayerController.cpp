@@ -32,6 +32,12 @@ void AXClonePlayerController::SetupPlayerInputComponent()
 	InputComponent->BindAction("Enter", IE_Pressed, this, &AXClonePlayerController::Enter);
 }
 
+void AXClonePlayerController::StartTurn()
+{
+	if (!controlledpawn->ismyturn())
+	controlledpawn->StartTurn();
+}
+
 void AXClonePlayerController::MoveRight(float Value)
 {
 	switch (Mode)

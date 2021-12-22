@@ -93,7 +93,13 @@ void AStratCam::BeginPlay()
 	}
 
 	GameState = Cast<AXCloneGameState>(GetWorld()->GetGameState());
-	
+
+	if (!ismyturn())
+	{
+		Currenthud->RemoveFromViewport();
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
+		Currenthud->AddToViewport();
+	}
 }
 
 // Called every frame
@@ -232,9 +238,9 @@ void AStratCam::EndTurn()
 	if(ismyturn())
 	{
 		clearsplinemesh();
-		//Currenthud->RemoveFromViewport();
-		//Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
-		//Currenthud->AddToViewport();
+		Currenthud->RemoveFromViewport();
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
+		Currenthud->AddToViewport();
         for (Axpawn* Actor : friendlypawns)
         {
             Actor->ActionsLeft = 2;
@@ -362,6 +368,13 @@ bool AStratCam::ismyturn()
 	if (HasAuthority() && GameState->Turn == 0) return true;
 	if (!HasAuthority() && GameState->Turn == 1) return true;
 	return false;
+}
+
+void AStratCam::StartTurn()
+{
+	Currenthud->RemoveFromViewport();
+	Currenthud = CreateWidget<UUserWidget>(GetWorld(),StandardHud);
+	Currenthud->AddToViewport();
 }
 
 void AStratCam::CallEndTurn_Implementation()

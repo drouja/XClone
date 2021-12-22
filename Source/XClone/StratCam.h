@@ -92,6 +92,7 @@ protected:
 	FTimerHandle movehandle;
 public:
 	bool ismyturn();
+	void StartTurn();
 
 	//Hud Stuff
 public:
