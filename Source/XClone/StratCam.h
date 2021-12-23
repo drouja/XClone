@@ -73,7 +73,6 @@ public:
 	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;
-	TArray<class Axpawn*> friendlypawns;
 	int focusindex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	TEnumAsByte<Team> playerteam;

@@ -14,6 +14,8 @@
 #include "Niagara/Public/NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BaseFloatText.h"
+#include "BattleManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 Axpawn::Axpawn()
@@ -63,6 +65,14 @@ Axpawn::Axpawn()
 void Axpawn::BeginPlay()
 {
 	Super::BeginPlay();
+	// Get battlemanager instance
+	TArray<AActor* >foundactor;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
+	for (AActor* Actor : foundactor)
+	{
+		battlemanager = Cast<ABattleManager>(Actor);
+	}
+	
 	team_mat = UMaterialInstanceDynamic::Create(pawnmesh->GetMaterial(0), this);
 	pawnmesh->SetMaterial(0,team_mat);
 	if (team == Red)
@@ -102,6 +112,11 @@ void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_)
 	}
 	Health-=Damage;
 	TakeDamageFx(Damage);
+	if (Health<=0)
+	{
+		battlemanager->FriendlyPawns.Remove(this);
+		Destroy();
+	}
 	
 }
 

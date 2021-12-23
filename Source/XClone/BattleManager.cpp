@@ -7,6 +7,7 @@
 #include "Containers/Array.h"
 #include "Algo/Reverse.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
@@ -92,6 +93,21 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path, A
 	}
 	path.Add(begin->GetActorLocation());
 	Algo::Reverse(path);
+}
+
+void ABattleManager::GetFriendlyPawns(TEnumAsByte<Team> playerteam)
+{
+	TArray<AActor* > foundpawns;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
+	for (AActor* Actor : foundpawns)
+	{
+		Axpawn* foundpawn = Cast<Axpawn>(Actor);
+		if (foundpawn != nullptr && foundpawn->team == playerteam)
+		{
+			FriendlyPawns.Add(foundpawn);
+		}
+			
+	}
 }
 
 

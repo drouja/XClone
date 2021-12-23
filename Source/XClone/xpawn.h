@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BattleManager.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Pawn.h"
 #include "xpawn.generated.h"
@@ -26,8 +27,9 @@ protected:
 	class UCameraComponent* Cam;
 	UPROPERTY(EditDefaultsOnly,Category="ActorSpawning")
 	TSubclassOf<class ABullet> ABulletBP;
+	ABattleManager* battlemanager;
 
-	
+
 public:
 	// Sets default values for this pawn's properties
 	Axpawn();

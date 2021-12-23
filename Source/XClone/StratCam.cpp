@@ -72,18 +72,8 @@ void AStratCam::BeginPlay()
 	
 
 	// Get list of friendly actors
-	TArray<AActor* > foundpawns;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
-	for (AActor* Actor : foundpawns)
-	{
-		Axpawn* foundpawn = Cast<Axpawn>(Actor);
-		if (foundpawn != nullptr && foundpawn->team == playerteam)
-		{
-			friendlypawns.Add(foundpawn);
-		}
-			
-	}
-	focusedpawn = friendlypawns[0];
+	battlemanager->GetFriendlyPawns(playerteam);
+	focusedpawn = battlemanager->FriendlyPawns[0];
 
 	//Setup Hud
 	if(PC!=nullptr && PC->IsLocalPlayerController())
@@ -172,8 +162,8 @@ void AStratCam::ChangeFocus()
 {
 	if (battlemanager->ismoving) return;
 	focusindex++;
-	if (focusindex >= friendlypawns.Num()) focusindex = 0;
-	focusedpawn = friendlypawns[focusindex];
+	if (focusindex >= battlemanager->FriendlyPawns.Num()) focusindex = 0;
+	focusedpawn = battlemanager->FriendlyPawns[focusindex];
 	FVector loc = focusedpawn->GetActorLocation();
 	loc.Z = GetActorLocation().Z;
 	MoveTo(loc);
@@ -241,7 +231,7 @@ void AStratCam::EndTurn()
 		Currenthud->RemoveFromViewport();
 		Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
 		Currenthud->AddToViewport();
-        for (Axpawn* Actor : friendlypawns)
+        for (Axpawn* Actor : battlemanager->FriendlyPawns)
         {
             Actor->ActionsLeft = 2;
         }

@@ -27,5 +27,7 @@ public:
 	bool Pathfind(Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
 	void makepath(Atile* start, Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
 	bool ismoving; //because unreal is really really fun to use!!!!!!!!!!!!!!!!
+	TArray<class Axpawn*> FriendlyPawns;
+	void GetFriendlyPawns(TEnumAsByte<enum Team> playerteam);
 
 };
