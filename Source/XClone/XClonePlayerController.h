@@ -24,6 +24,7 @@ class XCLONE_API AXClonePlayerController : public APlayerController
 	AXClonePlayerController();
 	virtual void BeginPlay() override;
 	AStratCam * controlledpawn;
+	ABattleManager* battlemanager;
 
 private:
 	void MoveRight(float Value);
@@ -41,15 +42,16 @@ protected:
 	virtual void ToAimShot();
 	UFUNCTION(BlueprintCallable)
 	virtual void ToStandardMode();
+public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool NextTarget(int direction, bool binstant = false);
+protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void Shoot();
 	UFUNCTION(Server, Reliable, WithValidation)
 	void server_shoot(Axpawn* fp,float hc, FVector loc, Axpawn* tp);
 	int index;
 	void Turn();
-	
 	FRotator TargetRot;
 	FVector TargetLoc;
 	FVector OGLoc;

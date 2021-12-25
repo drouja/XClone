@@ -30,4 +30,13 @@ public:
 	TArray<class Axpawn*> FriendlyPawns;
 	void GetFriendlyPawns(TEnumAsByte<enum Team> playerteam);
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TArray<class Axpawn*> TargetPawns;
+	TArray<FVector> ShootFromLocs;
+	TArray<FVector> AimAtLocs;
+	TArray<int> ExposureScores;
+	void GetTargetsInRange(TEnumAsByte<enum Team> playerteam, Axpawn* focusedpawn);
+	UFUNCTION(NetMulticast,Reliable)
+	void Delete_Multicast(Axpawn* tp);
+
 };

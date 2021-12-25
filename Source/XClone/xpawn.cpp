@@ -114,7 +114,6 @@ void Axpawn::TakeDamage(float Acc_Modifier, int MaxDamage_)
 	TakeDamageFx(Damage);
 	if (Health<=0)
 	{
-		battlemanager->FriendlyPawns.Remove(this);
 		Destroy();
 	}
 	

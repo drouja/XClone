@@ -65,20 +65,16 @@ public:
 	bool movetodesiredloc;
 	TArray<FVector> patharray;
 	class Axpawn* focusedpawn;
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
-	TArray<class Axpawn*> TargetPawns;
-	TArray<FVector> ShootFromLocs;
-	TArray<FVector> AimAtLocs;
-	TArray<int> ExposureScores; 
+	// Not sure what this does
 	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;
 	int focusindex;
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	TEnumAsByte<Team> playerteam;
 public:
 	void clearsplinemesh();
-	void GetTargetsInRange();
 
 // Multiplayer functions
 protected:

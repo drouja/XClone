@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BaseFloatText.h"
+#include "Kismet/GameplayStatics.h"
 
 AXClonePlayerController::AXClonePlayerController()
 {
@@ -16,6 +17,12 @@ AXClonePlayerController::AXClonePlayerController()
 void AXClonePlayerController::BeginPlay()
 {
 	Super::SetupInputComponent();
+	TArray<AActor* >foundactor;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
+	for (AActor* Actor : foundactor)
+	{
+		battlemanager = Cast<ABattleManager>(Actor);
+	}
 	controlledpawn = Cast<AStratCam>(GetPawn());
 	SetupPlayerInputComponent();
 }
@@ -175,7 +182,7 @@ void AXClonePlayerController::ToAimShot()
 		controlledpawn->Currenthud->AddToViewport();
 		controlledpawn->clearsplinemesh();
 		index = -1;
-		controlledpawn->GetTargetsInRange();
+		battlemanager->GetTargetsInRange(controlledpawn->playerteam,controlledpawn->focusedpawn);
 		NextTarget(1,true);
 		return;
 	case AimShot:
@@ -207,7 +214,7 @@ void AXClonePlayerController::ToStandardMode()
 
 bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 {
-	if(controlledpawn->TargetPawns.Num()<1)
+	if(battlemanager->TargetPawns.Num()<1)
 	{
 		controlledpawn->targetedpawn = nullptr;
 		HitChance = -1.0;
@@ -216,7 +223,7 @@ bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 	if(direction>=0)
 	{
 		index++;
-		if (index>=controlledpawn->TargetPawns.Num())
+		if (index>=battlemanager->TargetPawns.Num())
 		{
 			index=0;
 		}
@@ -226,12 +233,12 @@ bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 		index--;
 		if(index<0)
 		{
-			index = controlledpawn->TargetPawns.Num()-1;
+			index = battlemanager->TargetPawns.Num()-1;
 		}
 	}
-	controlledpawn->targetedpawn = controlledpawn->TargetPawns[index];
+	controlledpawn->targetedpawn = battlemanager->TargetPawns[index];
 	TargetRot = controlledpawn->focusedpawn->GetActorRotation();
-	TargetLoc = controlledpawn->ShootFromLocs[index];
+	TargetLoc = battlemanager->ShootFromLocs[index];
 	TargetRot.Yaw = UKismetMathLibrary::MakeRotFromXZ(
 		controlledpawn->targetedpawn->GetActorLocation()-TargetLoc,
 		controlledpawn->focusedpawn->GetActorUpVector()).Yaw;
@@ -243,7 +250,7 @@ bool AXClonePlayerController::NextTarget(int direction, bool binstant)
 		controlledpawn->focusedpawn->SetActorRotation(TargetRot);
 		controlledpawn->focusedpawn->SetActorLocation(TargetLoc);
 	}
-	HitChance = (controlledpawn->ExposureScores[index]/3.0)-
+	HitChance = (battlemanager->ExposureScores[index]/3.0)-
 		UKismetMathLibrary::Lerp(0,0.3,(controlledpawn->targetedpawn->GetActorLocation()-controlledpawn->focusedpawn->GetActorLocation()).Size()/1000.0);
 	return true;
 }
@@ -264,12 +271,16 @@ void AXClonePlayerController::Shoot()
 	if (HitChance>0.0)
 	{
 		server_shoot(controlledpawn->focusedpawn,HitChance,controlledpawn->targetedpawn->GetActorLocation(),controlledpawn->targetedpawn);
+		controlledpawn->focusedpawn->ActionsLeft--;
 	}
 }
+
 
 void AXClonePlayerController::server_shoot_Implementation(Axpawn* fp, float hc, FVector loc, Axpawn* tp)
 {
 	fp->Attack(hc,loc,tp);
+	if (!IsValid(tp)) battlemanager->Delete_Multicast(tp);
+	//battlemanager->Delete_Multicast(tp);
 }
 
 bool AXClonePlayerController::server_shoot_Validate(Axpawn* fp,float hc, FVector loc, Axpawn* tp)
