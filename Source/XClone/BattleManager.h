@@ -37,6 +37,6 @@ public:
 	TArray<int> ExposureScores;
 	void GetTargetsInRange(TEnumAsByte<enum Team> playerteam, Axpawn* focusedpawn);
 	UFUNCTION(NetMulticast,Reliable)
-	void Delete_Multicast(Axpawn* tp);
+	void Delete_Multicast(uint32 ID);
 
 };

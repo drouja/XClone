@@ -65,6 +65,10 @@ Axpawn::Axpawn()
 void Axpawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (HasAuthority())
+	ID = GetUniqueID();
+	
 	// Get battlemanager instance
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
@@ -92,6 +96,7 @@ void Axpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(Axpawn, Health);
+	DOREPLIFETIME(Axpawn, ID);
 }
 
 void Axpawn::Attack(float Acc_Modifier, FVector Target, Axpawn * TargetPawn)

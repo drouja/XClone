@@ -33,6 +33,8 @@ protected:
 public:
 	// Sets default values for this pawn's properties
 	Axpawn();
+	UPROPERTY(Replicated,VisibleAnywhere)
+	uint32 ID;
 
 protected:
 	// Called when the game starts or when spawned

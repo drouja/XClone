@@ -96,17 +96,37 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path, A
 	Algo::Reverse(path);
 }
 
-void ABattleManager::Delete_Multicast_Implementation(Axpawn* tp)
+void ABattleManager::Delete_Multicast_Implementation(uint32 ID)
 {
-	FriendlyPawns.Remove(tp);
-	if (TargetPawns.Contains(tp))
+	for (auto Fpawn : FriendlyPawns)
 	{
-		auto index = TargetPawns.Find(tp);
-		TargetPawns.Remove(tp);
-		ShootFromLocs.RemoveAt(index);
-		AimAtLocs.RemoveAt(index);
-		ExposureScores.RemoveAt(index);
-		Cast<AXClonePlayerController>(GetWorld()->GetFirstPlayerController())->NextTarget(1);
+		if (!GetWorld()->IsServer())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CLIENT ID: %d"), Fpawn->ID);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SERVER ID: %d"), Fpawn->ID);
+		}
+		if (Fpawn->ID == ID)
+		{
+			FriendlyPawns.Remove(Fpawn);
+			break;
+		}
+	}
+	uint32 index = 0;
+	for (auto Tpawn : TargetPawns)
+	{
+		if (Tpawn->ID == ID)
+		{
+			TargetPawns.Remove(Tpawn);
+			ShootFromLocs.RemoveAt(index);
+			AimAtLocs.RemoveAt(index);
+			ExposureScores.RemoveAt(index);
+			Cast<AXClonePlayerController>(GetWorld()->GetFirstPlayerController())->NextTarget(1);
+			return;
+		}
+		index++;
 	}
 }
 

@@ -43,6 +43,7 @@ void AXClonePlayerController::StartTurn()
 {
 	if (!controlledpawn->ismyturn())
 	controlledpawn->StartTurn();
+	controlledpawn->ChangeFocus();
 }
 
 void AXClonePlayerController::MoveRight(float Value)
@@ -278,8 +279,9 @@ void AXClonePlayerController::Shoot()
 
 void AXClonePlayerController::server_shoot_Implementation(Axpawn* fp, float hc, FVector loc, Axpawn* tp)
 {
+	uint32 TempID = tp->ID;
 	fp->Attack(hc,loc,tp);
-	if (!IsValid(tp)) battlemanager->Delete_Multicast(tp);
+	if (!IsValid(tp)) battlemanager->Delete_Multicast(TempID);
 	//battlemanager->Delete_Multicast(tp);
 }
 
