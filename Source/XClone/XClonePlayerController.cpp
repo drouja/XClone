@@ -42,8 +42,10 @@ void AXClonePlayerController::SetupPlayerInputComponent()
 void AXClonePlayerController::StartTurn()
 {
 	if (!controlledpawn->ismyturn())
-	controlledpawn->StartTurn();
-	controlledpawn->ChangeFocus();
+	{
+		controlledpawn->StartTurn();
+		controlledpawn->ChangeFocus();
+	}
 }
 
 void AXClonePlayerController::MoveRight(float Value)
