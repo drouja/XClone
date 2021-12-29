@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "xpawn.h"
 #include "GameFramework/Pawn.h"
 #include "StratCam.generated.h"
 
@@ -18,21 +19,22 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void MoveTo(FVector loc);
+public:
 	void MoveRight(float Value);
 	void MoveForward(float Value);
 	void Zoom(float Value);
 	void RotateCam(float Value);
 	void ChangeFocus();
-	void MoveTo(FVector loc);
-	void HighlightTile();
 	void RequestMove();
+	void EndTurn();
+	void HighlightTile();
+	
 
 private:
 	FTimerHandle findtile;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-	class UCameraComponent* Cam;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 	class USpringArmComponent* SpringArmComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
@@ -46,7 +48,9 @@ protected:
 	TArray<class USplineMeshComponent*> pathmesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	UStaticMesh* meshref;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	class UCameraComponent* Cam;
+	class AXCloneGameState* GameState;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -60,7 +64,44 @@ public:
 	FVector desiredloc;
 	bool movetodesiredloc;
 	TArray<FVector> patharray;
+	class Axpawn* focusedpawn;
+	// Not sure what this does
+	class Axpawn* targetedpawn;
 protected:
 	class Atile* oldtile;
+	int focusindex;
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+	TEnumAsByte<Team> playerteam;
+public:
+	void clearsplinemesh();
 
+// Multiplayer functions
+protected:
+	UFUNCTION(Server, Reliable, WithValidation)
+	void server_requestmove(FVector loc, FRotator rot, Axpawn* focusedpawn1);
+	void startmovepawn();
+	UFUNCTION()
+	void movepawn();
+	float movedist;
+	FTimerHandle movehandle;
+public:
+	bool ismyturn();
+	void StartTurn();
+
+	//Hud Stuff
+public:
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> StandardHud;
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> AimHud;
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> EnemyTurnHud;
+	UUserWidget* Currenthud;
+private:
+	UFUNCTION(Server,Reliable)
+	void CallEndTurn();
+	
 };
+
+

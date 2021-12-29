@@ -9,9 +9,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "xpawn.h"
 #include "tile.h"
+#include "XCloneGameState.h"
+#include "Blueprint/UserWidget.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "XCloneGameState.h"
 
 // Sets default values
 AStratCam::AStratCam()
@@ -33,6 +37,8 @@ AStratCam::AStratCam()
 	battlemanager = nullptr;
 
 	oldtile = nullptr;
+
+	focusindex = 0;
 }
 
 // Called when the game starts or when spawned
@@ -40,6 +46,12 @@ void AStratCam::BeginPlay()
 {
 	select->SetVisibility(false);
 	Super::BeginPlay();
+
+	if (HasAuthority())
+		playerteam = Red;
+	else
+		playerteam = Blue;
+	
 	TArray<AActor* >foundactor;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABattleManager::StaticClass(), foundactor);
 	for (AActor* Actor : foundactor)
@@ -47,7 +59,7 @@ void AStratCam::BeginPlay()
 		battlemanager = Cast<ABattleManager>(Actor);
 	}
 	
-	//Get controller and enable mouse cursor
+	// Get controller and enable mouse cursor
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC)
 	{
@@ -56,8 +68,28 @@ void AStratCam::BeginPlay()
 		PC->bEnableMouseOverEvents = true;
 	}
 
-	//Set timers
-	GetWorldTimerManager().SetTimer(findtile, this, &AStratCam::HighlightTile, 0.05f, true, 0.0f);
+	// Set timers
+	
+
+	// Get list of friendly actors
+	battlemanager->GetFriendlyPawns(playerteam);
+	focusedpawn = battlemanager->FriendlyPawns[0];
+
+	//Setup Hud
+	if(PC!=nullptr && PC->IsLocalPlayerController())
+	{
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),StandardHud);
+		Currenthud->AddToViewport();
+	}
+
+	GameState = Cast<AXCloneGameState>(GetWorld()->GetGameState());
+
+	if (!ismyturn())
+	{
+		Currenthud->RemoveFromViewport();
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
+		Currenthud->AddToViewport();
+	}
 }
 
 // Called every frame
@@ -65,19 +97,27 @@ void AStratCam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (movetodesiredloc) SetActorLocation(FMath::VInterpTo(GetActorLocation(), desiredloc, DeltaTime, 10.0f));
+	if (HasAuthority())
+	{
+		//ismoving = true;
+		//UE_LOG(LogTemp, Warning, TEXT("Turn: %s"), ( (battlemanager->turn == 1) ? TEXT("Client") : TEXT("Server") ));
+	}
 }
 
 // Called to bind functionality to input
 void AStratCam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAxis("MoveForward", this, &AStratCam::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AStratCam::MoveRight);
-	PlayerInputComponent->BindAxis("Scroll", this, &AStratCam::Zoom);
-	PlayerInputComponent->BindAxis("Shift", this, &AStratCam::RotateCam);
-	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AStratCam::ChangeFocus);
-	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &AStratCam::RequestMove);
+}
 
+void AStratCam::server_requestmove_Implementation(FVector loc, FRotator rot, Axpawn* focusedpawn1)
+{
+	focusedpawn1->SetActorLocationAndRotation(loc, rot);
+}
+
+bool AStratCam::server_requestmove_Validate(FVector loc, FRotator rot, Axpawn* focusedpawn1)
+{
+	return true;
 }
 
 void AStratCam::MoveForward(float Value)
@@ -120,13 +160,13 @@ void AStratCam::RotateCam(float Value)
 
 void AStratCam::ChangeFocus()
 {
-	if (battlemanager != nullptr)
-	{
-		Axpawn* focusedpawn = battlemanager->CycleFocus();
-		FVector loc = focusedpawn->GetActorLocation();
-		loc.Z = GetActorLocation().Z;
-		MoveTo(loc);
-	}
+	if (battlemanager->ismoving) return;
+	focusindex++;
+	if (focusindex >= battlemanager->FriendlyPawns.Num()) focusindex = 0;
+	focusedpawn = battlemanager->FriendlyPawns[focusindex];
+	FVector loc = focusedpawn->GetActorLocation();
+	loc.Z = GetActorLocation().Z;
+	MoveTo(loc);
 }
 
 void AStratCam::MoveTo(FVector loc)
@@ -137,14 +177,18 @@ void AStratCam::MoveTo(FVector loc)
 
 void AStratCam::HighlightTile()
 {
+	//If pawn currently moving, dont pathfind, if not your turn dont pathfind
+	if (battlemanager->ismoving) return;
 
+	//Get highlighted tile
 	FHitResult outhit{};
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility,false,outhit);
 	Atile* tile = Cast<Atile>(outhit.GetActor());
-	
+
+	//If the thing we're trying to highlight is a tile and it's not the tile we have been highlighting
 	if (tile != nullptr && oldtile != tile)
 	{
-		if (!battlemanager->Pathfind(tile, patharray)) return;
+		if (!battlemanager->Pathfind(tile, patharray, focusedpawn)) return;
 
 		oldtile = tile;
 		select->SetWorldLocation(tile->GetActorLocation());
@@ -154,16 +198,9 @@ void AStratCam::HighlightTile()
 
 		path->SetSplinePoints(patharray, ESplineCoordinateSpace::World,true);
 		
-		for (int i{ 0 }; i < pathmesh.Num(); i++) //For some reason pathmesh.empty doesnt call destructors so we have to do it here :(
-		{
-			if (pathmesh[i] != nullptr)
-			{
-				pathmesh[i]->DestroyComponent();
-			}
-		}
+		clearsplinemesh();
 
-		pathmesh.Empty();
-
+		//Draw path between target and pawn using spline components
 		for (int i{ 0 }; i < patharray.Num() - 1; i++)
 		{
 			pathmesh.Add(NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass()));
@@ -174,13 +211,87 @@ void AStratCam::HighlightTile()
 			pathmesh[i]->SetStartAndEnd(path->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local),path->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local), path->GetLocationAtSplinePoint(i+1, ESplineCoordinateSpace::Local), path->GetTangentAtSplinePoint(i+1, ESplineCoordinateSpace::Local));
 		}
 	}
-}
+}                       
 
 void AStratCam::RequestMove()
 {
-	battlemanager->startmovepawn(oldtile, path);
+	startmovepawn();
 	for (int i{ 0 }; i < pathmesh.Num(); i++)
 	{
-		pathmesh[i]->DestroyComponent();
+		if (pathmesh[i] != nullptr)
+			pathmesh[i]->DestroyComponent();
 	}
+}
+
+void AStratCam::EndTurn()
+{
+	if(ismyturn())
+	{
+		clearsplinemesh();
+		Currenthud->RemoveFromViewport();
+		Currenthud = CreateWidget<UUserWidget>(GetWorld(),EnemyTurnHud);
+		Currenthud->AddToViewport();
+        for (Axpawn* Actor : battlemanager->FriendlyPawns)
+        {
+            Actor->ActionsLeft = 2;
+        }
+		CallEndTurn();
+	}
+}
+
+void AStratCam::clearsplinemesh()
+{
+	//Destroy old spline components / stop drawing path between old target and pawn
+	for (int i{ 0 }; i < pathmesh.Num(); i++)
+	{
+		if (pathmesh[i] != nullptr)
+		{
+			pathmesh[i]->DestroyComponent();
+		}
+	}
+	pathmesh.Empty();
+}
+
+void AStratCam::startmovepawn()
+{
+	if (battlemanager->ismoving || focusedpawn->FindTile()->GetActorLocation() == patharray.Last()) return;
+	movedist = 0;
+	battlemanager->ismoving = true;
+	focusedpawn->ActionsLeft--;
+	clearsplinemesh();
+	GetWorldTimerManager().SetTimer(movehandle, this, &AStratCam::movepawn, 0.01, true, 0.0f);
+}
+
+void AStratCam::movepawn()
+{
+	movedist += 3;
+	if (movedist >= path->GetSplineLength())
+	{
+		GetWorldTimerManager().ClearTimer(movehandle);
+		battlemanager->ismoving = false;
+		return;
+	}
+	FVector loc = path->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
+	FRotator rot = path->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
+	server_requestmove(loc, rot, focusedpawn);
+}
+
+bool AStratCam::ismyturn()
+{
+	if (HasAuthority() && GameState->Turn == 0) return true;
+	if (!HasAuthority() && GameState->Turn == 1) return true;
+	return false;
+}
+
+void AStratCam::StartTurn()
+{
+	Currenthud->RemoveFromViewport();
+	Currenthud = CreateWidget<UUserWidget>(GetWorld(),StandardHud);
+	Currenthud->AddToViewport();
+}
+
+void AStratCam::CallEndTurn_Implementation()
+{
+	GameState->EndTurn();
 }

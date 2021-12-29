@@ -20,21 +20,23 @@ protected:
 	virtual void BeginPlay() override;
 	inline static bool SortPredicate(class Atile* itemA, class Atile* itemB);
 	inline static float h(class Atile* itemA, class Atile* itemB);
-	FTimerHandle movehandle;
-protected:
-	TArray<class Axpawn*> friendlypawns;
-	class AStratCam* cam;
-	int focusindex;
-	class Axpawn* focusedpawn;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	class Axpawn* CycleFocus();
-	bool Pathfind(Atile* end, TArray<FVector>& path);
-	void makepath(Atile* start, Atile* end, TArray<FVector>& path);
-	void startmovepawn(Atile* end, class USplineComponent* spline);
-	UFUNCTION()
-	void movepawn(Atile* end, class USplineComponent* spline);
-	float movedist;
+	bool Pathfind(Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
+	void makepath(Atile* start, Atile* end, TArray<FVector>& path, class Axpawn* focusedpawn);
+	bool ismoving; //because unreal is really really fun to use!!!!!!!!!!!!!!!!
+	TArray<class Axpawn*> FriendlyPawns;
+	void GetFriendlyPawns(TEnumAsByte<enum Team> playerteam);
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	TArray<class Axpawn*> TargetPawns;
+	TArray<FVector> ShootFromLocs;
+	TArray<FVector> AimAtLocs;
+	TArray<int> ExposureScores;
+	void GetTargetsInRange(TEnumAsByte<enum Team> playerteam, Axpawn* focusedpawn);
+	UFUNCTION(NetMulticast,Reliable)
+	void Delete_Multicast(uint32 ID);
+
 };

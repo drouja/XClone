@@ -43,23 +43,23 @@ void Atile::BeginPlay()
 	}
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 0,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
-		neighbours[2] = Cast<Atile>(Outhit.Actor);
+		neighbours[1] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[2]);
 	}
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,0,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
-		neighbours[3] = Cast<Atile>(Outhit.Actor);
+		neighbours[2] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[3]);
 	}
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 0,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
-		neighbours[5] = Cast<Atile>(Outhit.Actor);
+		neighbours[3] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[5]);
 	}
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
-		neighbours[1] = Cast<Atile>(Outhit.Actor);
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[4] = Cast<Atile>(Outhit.Actor);
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+		neighbours[5] = Cast<Atile>(Outhit.Actor);
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[6] = Cast<Atile>(Outhit.Actor);
 	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))

@@ -4,40 +4,23 @@
 #include "BattleManager.h"
 #include "xpawn.h"
 #include "tile.h"
-#include "StratCam.h"
 #include "Containers/Array.h"
-#include "Kismet/GameplayStatics.h"
 #include "Algo/Reverse.h"
-#include "DrawDebugHelpers.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Components/SplineComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+#include "XClonePlayerController.h"
 
 // Sets default values
 ABattleManager::ABattleManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	focusindex = 0;
+	ismoving = false;
 }
 
 // Called when the game starts or when spawned
 void ABattleManager::BeginPlay()
 {
-	Super::BeginPlay();
-	TArray<AActor* > foundpawns;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
-	for (AActor* Actor : foundpawns)
-	{
-		friendlypawns.Add(Cast<Axpawn>(Actor));
-	}
-	focusedpawn = friendlypawns[0];
-	TArray<AActor* >foundcamera;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStratCam::StaticClass(), foundcamera);
-	for (AActor* Actor : foundcamera)
-	{
-		cam = Cast<AStratCam>(Actor);
-	}
-
 }
 
 // Called every frame
@@ -46,19 +29,9 @@ void ABattleManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-Axpawn* ABattleManager::CycleFocus()
+bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
-	focusindex++;
-	if (focusindex >= friendlypawns.Num()) focusindex = 0;
-	focusedpawn = friendlypawns[focusindex];
-	return focusedpawn;
-}
-
-bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
-{
-	if (GetWorldTimerManager().IsTimerActive(movehandle)) return false; //If pawn is moving dont pathfind
-
-	// if destination already contains tile, don't pathfind to it
+	// if destination already contains pawn, don't pathfind to it
 	TArray<AActor* > result1;
 	end->GetOverlappingActors(result1, Axpawn::StaticClass());
 	if (result1.Num() > 0) return false;
@@ -80,7 +53,7 @@ bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 		closed.Add(current);
 		if (current == end)
 		{
-			makepath(start,end,path);
+			makepath(start,end,path, focusedpawn);
 			return true;
 		}
 		for (int i{ 0 }; i < 8;i++) {
@@ -103,11 +76,10 @@ bool ABattleManager::Pathfind(Atile* end, TArray<FVector>& path)
 				if (notcontains) open.Add(neighbour);
 			}
 		}
-		//timeout += GetWorld()->DeltaTimeSeconds;
 	}
 }
 
-void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
+void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path, Axpawn* focusedpawn)
 {
 	path.Empty();
 	Atile* current = end;
@@ -124,6 +96,131 @@ void ABattleManager::makepath(Atile* begin, Atile* end, TArray<FVector>& path)
 	Algo::Reverse(path);
 }
 
+void ABattleManager::Delete_Multicast_Implementation(uint32 ID)
+{
+	for (auto Fpawn : FriendlyPawns)
+	{
+		if (!GetWorld()->IsServer())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CLIENT ID: %d"), Fpawn->ID);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SERVER ID: %d"), Fpawn->ID);
+		}
+		if (Fpawn->ID == ID)
+		{
+			FriendlyPawns.Remove(Fpawn);
+			break;
+		}
+	}
+	uint32 index = 0;
+	for (auto Tpawn : TargetPawns)
+	{
+		if (Tpawn->ID == ID)
+		{
+			TargetPawns.Remove(Tpawn);
+			ShootFromLocs.RemoveAt(index);
+			AimAtLocs.RemoveAt(index);
+			ExposureScores.RemoveAt(index);
+			Cast<AXClonePlayerController>(GetWorld()->GetFirstPlayerController())->NextTarget(1);
+			return;
+		}
+		index++;
+	}
+}
+
+void ABattleManager::GetFriendlyPawns(TEnumAsByte<Team> playerteam)
+{
+	TArray<AActor* > foundpawns;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
+	for (AActor* Actor : foundpawns)
+	{
+		Axpawn* foundpawn = Cast<Axpawn>(Actor);
+		if (foundpawn != nullptr && foundpawn->team == playerteam)
+		{
+			FriendlyPawns.Add(foundpawn);
+		}
+			
+	}
+}
+
+void ABattleManager::GetTargetsInRange(TEnumAsByte<Team> playerteam, Axpawn* focusedpawn)
+{
+	TargetPawns.Empty();
+	AimAtLocs.Empty();
+	ShootFromLocs.Empty();
+	ExposureScores.Empty();
+	
+	TArray<AActor*> actorsToIgnore;
+	actorsToIgnore.Add(focusedpawn);
+	FHitResult Outhit{};
+	
+	TArray<AActor* > foundpawns;
+	TArray<Axpawn* > EnemyPawns;
+	
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Axpawn::StaticClass(), foundpawns);
+	for (AActor* Actor : foundpawns)
+	{
+		Axpawn* foundpawn = Cast<Axpawn>(Actor);
+		if (foundpawn != nullptr &&
+			foundpawn->team != playerteam) EnemyPawns.Add(foundpawn);
+	}
+	
+	FVector OGStartLoc {focusedpawn->GunLoc->GetComponentLocation()};
+	Atile* CurrentTile = focusedpawn->FindTile();
+	
+	for (Axpawn* pawn : EnemyPawns)
+	{
+		FVector StartLoc = OGStartLoc;
+		bool nextpawn = false;
+		TArray<USceneComponent*> Targets {};
+		Targets.Add(pawn->HeadLoc);
+		Targets.Add(pawn->BodyLoc);
+		Targets.Add(pawn->LegLoc);
+		
+		
+		for (int i{-1};i<4;i++)
+		{
+			if (nextpawn) break;
+			if(i!=-1)
+			{
+				FVector NeighborLoc{};
+				if (CurrentTile->neighbours[i] !=nullptr)
+					NeighborLoc = CurrentTile->neighbours[i]->GetActorLocation();
+				StartLoc.X=NeighborLoc.X;
+				StartLoc.Y=NeighborLoc.Y;
+			}
+			for (USceneComponent* Target : Targets)
+			{
+				if (UKismetSystemLibrary::LineTraceSingle(this,
+				StartLoc,
+				Target->GetComponentLocation(),
+				UEngineTypes::ConvertToTraceType(ECC_Visibility),
+				false, actorsToIgnore,
+				EDrawDebugTrace::None, Outhit,
+				true, FLinearColor::Red,
+				FLinearColor::Green, 0.0f)
+			)
+				if(Outhit.Actor == pawn)
+				{
+					if (!nextpawn)
+					{
+						TargetPawns.Add(pawn);
+						ShootFromLocs.Add(StartLoc);
+						AimAtLocs.Add(Target->GetComponentLocation());
+						ExposureScores.Add(1);
+					}
+					else ExposureScores[ExposureScores.Num()-1]++;
+					nextpawn = true;
+				}
+				
+			}
+			
+		}
+	}
+}
+
 
 inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB)
 {
@@ -133,26 +230,4 @@ inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB
 inline float ABattleManager::h(Atile* itemA, Atile* itemB)
 {
 	return (itemA->GetActorLocation() - itemB->GetActorLocation()).Size();
-}
-
-void ABattleManager::startmovepawn(Atile* end, USplineComponent* spline)
-{
-	if (GetWorldTimerManager().IsTimerActive(movehandle) || focusedpawn->FindTile() == end) return;
-	FTimerDelegate movehandledel;
-	movedist = 0;
-	movehandledel.BindUFunction(this, FName("movepawn"), end, spline);
-	GetWorldTimerManager().SetTimer(movehandle, movehandledel, 0.01, true, 0.0f);
-}
-
-void ABattleManager::movepawn(Atile* end, USplineComponent* spline)
-{
-	movedist += 3;
-	if (movedist >= spline->GetSplineLength())
-	{
-		GetWorldTimerManager().ClearTimer(movehandle);
-		return;
-	}
-	FVector loc = spline->GetLocationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World);
-	loc.Z = focusedpawn->GetActorLocation().Z; //Temporary so that pawn doesnt go down into floor
-	focusedpawn->SetActorLocationAndRotation(loc, spline->GetRotationAtDistanceAlongSpline(movedist, ESplineCoordinateSpace::World));
 }
