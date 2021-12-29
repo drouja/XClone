@@ -97,6 +97,8 @@ public:
 	TSubclassOf<UUserWidget> AimHud;
 	UPROPERTY(EditAnywhere, Category=HUD)
 	TSubclassOf<UUserWidget> EnemyTurnHud;
+	UPROPERTY(EditAnywhere, Category=HUD)
+	TSubclassOf<UUserWidget> EndGameHud;
 	UUserWidget* Currenthud;
 private:
 	UFUNCTION(Server,Reliable)

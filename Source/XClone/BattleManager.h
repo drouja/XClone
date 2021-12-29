@@ -38,5 +38,7 @@ public:
 	void GetTargetsInRange(TEnumAsByte<enum Team> playerteam, Axpawn* focusedpawn);
 	UFUNCTION(NetMulticast,Reliable)
 	void Delete_Multicast(uint32 ID);
+	UFUNCTION(NetMulticast,Reliable)
+	void EndGame_Multicast();
 
 };

@@ -48,6 +48,25 @@ void AXClonePlayerController::StartTurn()
 	}
 }
 
+void AXClonePlayerController::StartEndGame()
+{
+	EndGame_Server();
+}
+
+void AXClonePlayerController::DrawEndScreen(bool win)
+{
+	Mode = EndGame;
+	iswon = win;
+	controlledpawn->Currenthud->RemoveFromViewport();
+	controlledpawn->Currenthud = CreateWidget<UUserWidget>(GetWorld(),controlledpawn->EndGameHud);
+	controlledpawn->Currenthud->AddToViewport();
+}
+
+void AXClonePlayerController::EndGame_Server_Implementation()
+{
+	battlemanager->EndGame_Multicast();
+}
+
 void AXClonePlayerController::MoveRight(float Value)
 {
 	switch (Mode)

@@ -12,6 +12,7 @@ enum EControlMode
 {
 	Standard UMETA(DisplayName = "Standard"),
 	AimShot	UMETA(DisplayName = "AimShot"),
+	EndGame UMETA(DisplayName = "EndGame")
 };
 
 /**
@@ -68,5 +69,12 @@ protected:
 	TEnumAsByte<EControlMode> Mode;
 public:
 	void StartTurn();
+	void StartEndGame();
+	void DrawEndScreen(bool win);
+protected:
+	UPROPERTY(BlueprintReadOnly)
+	bool iswon = false;
+	UFUNCTION(Server,Unreliable)
+	void EndGame_Server();
 	
 };

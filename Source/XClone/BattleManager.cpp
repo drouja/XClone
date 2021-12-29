@@ -100,14 +100,6 @@ void ABattleManager::Delete_Multicast_Implementation(uint32 ID)
 {
 	for (auto Fpawn : FriendlyPawns)
 	{
-		if (!GetWorld()->IsServer())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("CLIENT ID: %d"), Fpawn->ID);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SERVER ID: %d"), Fpawn->ID);
-		}
 		if (Fpawn->ID == ID)
 		{
 			FriendlyPawns.Remove(Fpawn);
@@ -127,6 +119,10 @@ void ABattleManager::Delete_Multicast_Implementation(uint32 ID)
 			return;
 		}
 		index++;
+	}
+	if (FriendlyPawns.Num()<=0)
+	{
+		Cast<AXClonePlayerController>(GetWorld()->GetFirstPlayerController())->StartEndGame();
 	}
 }
 
@@ -221,6 +217,10 @@ void ABattleManager::GetTargetsInRange(TEnumAsByte<Team> playerteam, Axpawn* foc
 	}
 }
 
+void ABattleManager::EndGame_Multicast_Implementation()
+{
+	Cast<AXClonePlayerController>(GetWorld()->GetFirstPlayerController())->DrawEndScreen(FriendlyPawns.Num()>0);
+}
 
 inline bool ABattleManager::SortPredicate(class Atile* itemA, class Atile* itemB)
 {
