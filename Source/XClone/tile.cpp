@@ -16,7 +16,7 @@ Atile::Atile()
 	tilemesh->SetMobility(EComponentMobility::Static);
 	box = CreateDefaultSubobject<UBoxComponent>("DebugBox");
 	box->SetupAttachment(tilemesh);
-	box->SetBoxExtent(FVector{ 50,50,50 });
+	box->SetBoxExtent(FVector{ 40,40,40 });
 	box->SetRelativeLocation(FVector{0,0,50});
 	box->SetMobility(EComponentMobility::Static);
 	box->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
@@ -36,33 +36,33 @@ void Atile::BeginPlay()
 	tilemesh->SetMobility(EComponentMobility::Static);
 	FHitResult Outhit{};
 	TArray<AActor*> actorsToIgnore;
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,0,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ 70,0,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
 		neighbours[0] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[0]);
 	}
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 0,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ 0,70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
 		neighbours[1] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[2]);
 	}
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,0,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ -70,0,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
 		neighbours[2] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[3]);
 	}
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 0,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ 0,-70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 	{
 		neighbours[3] = Cast<Atile>(Outhit.Actor);
 		actorsToIgnore.Add(neighbours[5]);
 	}
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ 70,70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[4] = Cast<Atile>(Outhit.Actor);
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ -70,-70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[5] = Cast<Atile>(Outhit.Actor);
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ 60,-60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ 70,-70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[6] = Cast<Atile>(Outhit.Actor);
-	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,50 }, GetActorLocation() + FVector{ -60,60,50 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
+	if (UKismetSystemLibrary::LineTraceSingle(this, GetActorLocation() + FVector{ 0,0,10 }, GetActorLocation() + FVector{ -70,70,10 }, UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2), false, actorsToIgnore, EDrawDebugTrace::None, Outhit, true, FLinearColor::Red, FLinearColor::Green, 0.0f))
 		neighbours[7] = Cast<Atile>(Outhit.Actor);
 
 }
